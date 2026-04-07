@@ -14,6 +14,7 @@ class ContextBundle:
     calendar_events: list = field(default_factory=list)
     email_items: list = field(default_factory=list)
     notion_tasks: list = field(default_factory=list)
+    reading_list: list = field(default_factory=list)
     today: str = field(default_factory=lambda: date.today().isoformat())
 
     def to_prompt_text(self) -> str:
@@ -71,9 +72,11 @@ def build_context() -> ContextBundle:
     bundle = ContextBundle()
 
     try:
-        bundle.vault_notes = obsidian_reader.get_notes_with_tasks(
+        all_notes = obsidian_reader.get_notes_with_tasks(
             vault_path=config.VAULT_PATH, only_open=True
         )
+        # Exclude auto-generated daily notes to avoid feedback loops
+        bundle.vault_notes = [n for n in all_notes if not n.frontmatter.get("generated")]
         print(f"  [obsidian] {len(bundle.vault_notes)} notes with open tasks")
     except Exception as e:
         print(f"  [obsidian] skipped: {e}")
@@ -95,5 +98,13 @@ def build_context() -> ContextBundle:
         print(f"  [notion] {len(bundle.notion_tasks)} open tasks")
     except Exception as e:
         print(f"  [notion] skipped: {e}")
+
+    try:
+        from news_client import get_reading_list
+        all_vault_notes = obsidian_reader.read_vault(vault_path=config.VAULT_PATH)
+        bundle.reading_list = get_reading_list(all_vault_notes)
+        print(f"  [news] {len(bundle.reading_list)} articles")
+    except Exception as e:
+        print(f"  [news] skipped: {e}")
 
     return bundle

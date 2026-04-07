@@ -27,6 +27,7 @@ def generate(bundle: ContextBundle, vault_path: Path = config.VAULT_PATH) -> Pat
         + (["gmail"] if bundle.email_items else [])
         + (["notion"] if bundle.notion_tasks else [])
         + (["obsidian"] if bundle.vault_notes else [])
+        + (["news"] if bundle.reading_list else [])
     )
 
     day_label = today.strftime("%A, %B %-d %Y")
@@ -106,6 +107,19 @@ def generate(bundle: ContextBundle, vault_path: Path = config.VAULT_PATH) -> Pat
             lines.append(f"- [ ] {text} *(from: [[{Path(path).stem}]])*")
     else:
         lines.append("*No open tasks in vault.*")
+
+    lines += [
+        "",
+        "## Reading — Today's Links",
+        "",
+    ]
+
+    if bundle.reading_list:
+        for a in bundle.reading_list:
+            source = f" *({a['source']})*" if a.get("source") else ""
+            lines.append(f"- [{a['title']}]({a['url']}){source}")
+    else:
+        lines.append("*No articles fetched.*")
 
     lines += [
         "",
