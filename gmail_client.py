@@ -22,6 +22,11 @@ def get_credentials() -> Credentials:
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
+            if not config.GOOGLE_CREDENTIALS_FILE.exists():
+                raise FileNotFoundError(
+                    "Google token expired and credentials.json not found. "
+                    "Re-run setup.py to re-authenticate."
+                )
             flow = InstalledAppFlow.from_client_secrets_file(
                 str(config.GOOGLE_CREDENTIALS_FILE), SCOPES
             )
@@ -32,7 +37,7 @@ def get_credentials() -> Credentials:
 
 def get_action_items(max_results: int = 20) -> list[dict]:
     """Return recent unread emails from the last 24 hours as potential action items."""
-    if not config.GOOGLE_CREDENTIALS_FILE.exists():
+    if not config.GOOGLE_TOKEN_FILE.exists() and not config.GOOGLE_CREDENTIALS_FILE.exists():
         return []
     try:
         creds = get_credentials()

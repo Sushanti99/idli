@@ -60,6 +60,12 @@ def skip(msg: str):
     print(f"  {msg}")
 
 
+def open_url(url: str):
+    """Open a URL in the browser and always print it — in case the wrong account opens."""
+    print(f"  Opening: {url}")
+    webbrowser.open(url)
+
+
 # ── steps ────────────────────────────────────────────────────────────────────
 
 def setup_vault(env: dict):
@@ -95,10 +101,13 @@ def _ensure_google_apis_enabled():
     print()
     print("  Enabling Gmail and Google Calendar APIs (required).")
     print("  Opening both API pages — click 'Enable' on each if not already enabled.")
+    print(f"  If the browser opens the wrong account, use these links directly:")
+    print(f"    Gmail API:    {gmail_url}")
+    print(f"    Calendar API: {cal_url}")
     time.sleep(2)
-    webbrowser.open(gmail_url)
+    open_url(gmail_url)
     time.sleep(1)
-    webbrowser.open(cal_url)
+    open_url(cal_url)
     print()
     input("  Press Enter once you've enabled both APIs (takes ~30 seconds to propagate)...")
 
@@ -118,7 +127,7 @@ def setup_google(env: dict):
         print("  Step 1: Create OAuth credentials in Google Cloud Console.")
         print("  Opening browser in 2 seconds...\n")
         time.sleep(2)
-        webbrowser.open("https://console.cloud.google.com/apis/credentials")
+        open_url("https://console.cloud.google.com/apis/credentials")
         print("  Do this in the browser:")
         print("   1. Select or create a project (top-left dropdown)")
         print("   2. Click '+ Create Credentials' → 'OAuth client ID'")
@@ -177,7 +186,7 @@ def setup_notion(env: dict):
 
     print("  Opening Notion integrations page in 2 seconds...")
     time.sleep(2)
-    webbrowser.open("https://www.notion.so/my-integrations")
+    open_url("https://www.notion.so/my-integrations")
     print()
     print("  In the browser:")
     print("   1. Click '+ New integration'")
@@ -207,7 +216,7 @@ def setup_anthropic(env: dict):
 
     print("  Opening Anthropic console in 2 seconds...")
     time.sleep(2)
-    webbrowser.open("https://console.anthropic.com/settings/keys")
+    open_url("https://console.anthropic.com/settings/keys")
     print()
     key = ask("Paste your Anthropic API key (or press Enter to skip)")
     if key:

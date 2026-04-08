@@ -8,7 +8,7 @@ import config
 
 def get_todays_events(timezone_name: str = "America/Los_Angeles") -> list[dict]:
     """Return today's calendar events sorted by start time."""
-    if not config.GOOGLE_CREDENTIALS_FILE.exists():
+    if not config.GOOGLE_TOKEN_FILE.exists() and not config.GOOGLE_CREDENTIALS_FILE.exists():
         return []
     try:
         creds = get_credentials()
