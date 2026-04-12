@@ -30,11 +30,14 @@ def test_render_daily_note_includes_sections():
 
     content = render_daily_note(bundle)
 
-    assert "## Calendar — Today's Events" in content
-    assert "## Email — Action Items" in content
-    assert "## Notion Tasks" in content
-    assert "## Open Obsidian Tasks" in content
-    assert "## Reading — Today's Links" in content
+    obsidian_index = content.index("## Open Obsidian Tasks")
+    calendar_index = content.index("## Calendar — Today's Events")
+    email_index = content.index("## Email — Action Items")
+    notion_index = content.index("## Notion Tasks")
+    reading_index = content.index("## Reading — Today's Links")
+
+    assert obsidian_index < calendar_index < email_index < notion_index < reading_index
+    assert "sources: [obsidian, calendar, gmail, notion, news]" in content
 
 
 def test_generate_daily_note_refuses_overwrite_by_default(tmp_path, monkeypatch):

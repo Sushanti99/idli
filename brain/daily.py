@@ -22,10 +22,10 @@ def generate_daily_note(app_cfg: AppConfig, env_cfg: EnvConfig, *, force: bool =
 
 def render_daily_note(bundle: DailyContext) -> str:
     sources = (
-        (["calendar"] if bundle.calendar_events else [])
+        (["obsidian"] if bundle.vault_notes else [])
+        + (["calendar"] if bundle.calendar_events else [])
         + (["gmail"] if bundle.email_items else [])
         + (["notion"] if bundle.notion_tasks else [])
-        + (["obsidian"] if bundle.vault_notes else [])
         + (["news"] if bundle.reading_list else [])
     )
 
@@ -42,10 +42,23 @@ def render_daily_note(bundle: DailyContext) -> str:
         "",
         f"# Daily Note — {day_label}",
         "",
-        "## Calendar — Today's Events",
+        "## Open Obsidian Tasks",
         "",
     ]
 
+    open_vault_tasks = [
+        (note.relative_path, task["text"])
+        for note in bundle.vault_notes
+        for task in note.tasks
+        if not task["done"]
+    ]
+    if open_vault_tasks:
+        for relative_path, text in open_vault_tasks:
+            lines.append(f"- [ ] {text} *(from: [[{Path(relative_path).stem}]])*")
+    else:
+        lines.append("*No open tasks in vault.*")
+
+    lines += ["", "## Calendar — Today's Events", ""]
     if bundle.calendar_events:
         for event in bundle.calendar_events:
             if event["all_day"]:
@@ -76,19 +89,6 @@ def render_daily_note(bundle: DailyContext) -> str:
             lines.append(line)
     else:
         lines.append("*No open Notion tasks.*")
-
-    lines += ["", "## Open Obsidian Tasks", ""]
-    open_vault_tasks = [
-        (note.relative_path, task["text"])
-        for note in bundle.vault_notes
-        for task in note.tasks
-        if not task["done"]
-    ]
-    if open_vault_tasks:
-        for relative_path, text in open_vault_tasks:
-            lines.append(f"- [ ] {text} *(from: [[{Path(relative_path).stem}]])*")
-    else:
-        lines.append("*No open tasks in vault.*")
 
     lines += ["", "## Reading — Today's Links", ""]
     if bundle.reading_list:
