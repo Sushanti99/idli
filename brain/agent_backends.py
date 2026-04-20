@@ -83,24 +83,28 @@ class BaseBackend:
 class ClaudeCodeBackend(BaseBackend):
     name = "claude-code"
 
-    def build_command(self, prompt: str) -> list[str]:
+    def build_command(self) -> list[str]:
         config = self.command_config
         command = [config.command, *config.args]
         if config.allowed_tools:
             command.extend(["--allowedTools", *config.allowed_tools])
-        command.append(prompt)
         return command
 
     async def stream(self, prompt: str, cwd: Path, env: dict[str, str]):
-        command = self.build_command(prompt)
+        command = self.build_command()
         self._process = await asyncio.create_subprocess_exec(
             *command,
             cwd=str(cwd),
             env=env,
+            stdin=asyncio.subprocess.PIPE,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
+        assert self._process.stdin is not None
         assert self._process.stdout is not None
+        self._process.stdin.write(prompt.encode("utf-8"))
+        await self._process.stdin.drain()
+        self._process.stdin.close()
         try:
             while True:
                 line = await asyncio.wait_for(self._process.stdout.readline(), timeout=NO_OUTPUT_TIMEOUT_SECONDS)
@@ -199,19 +203,38 @@ def parse_claude_stream_line(line: str) -> BackendEvent | None:
         return BackendEvent(type="chunk", content=line, raw=line)
 
     event_type = payload.get("type", "")
-    if "error" in payload:
+
+    # Noise — skip silently
+    if event_type in {"system", "rate_limit_event", "user"}:
+        return None
+
+    # claude --print --output-format stream-json --verbose primary format
+    if event_type == "assistant":
+        content_blocks = payload.get("message", {}).get("content", [])
+        text = "".join(b["text"] for b in content_blocks if b.get("type") == "text" and b.get("text"))
+        if text:
+            return BackendEvent(type="chunk", content=text, raw=payload)
+        return BackendEvent(type="status", content="assistant", raw=payload)
+
+    if event_type == "result":
+        if payload.get("is_error"):
+            return BackendEvent(type="error", content=payload.get("result") or "Claude returned an error.", raw=payload)
+        return BackendEvent(type="done", raw=payload)
+
+    # Error fields
+    if payload.get("error"):
         return BackendEvent(type="error", content=str(payload["error"]), raw=payload)
+
+    # Legacy streaming format (content_block_delta etc.)
     if event_type in {"message_start", "content_block_start", "content_block_delta"}:
         text = payload.get("delta", {}).get("text") or payload.get("content_block", {}).get("text")
-        if text is None and payload.get("message"):
-            content_items = payload.get("message", {}).get("content", [])
-            if content_items and isinstance(content_items[0], dict):
-                text = content_items[0].get("text")
         if text:
             return BackendEvent(type="chunk", content=text, raw=payload)
         return BackendEvent(type="status", content=event_type, raw=payload)
+
     if event_type in {"message_delta", "message_stop"}:
         return BackendEvent(type="status", content=event_type, raw=payload)
+
     text = payload.get("text") or payload.get("content")
     if isinstance(text, str):
         return BackendEvent(type="chunk", content=text, raw=payload)
