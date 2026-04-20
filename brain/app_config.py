@@ -47,7 +47,7 @@ def _build_default_config(vault_path: Path, agent: str = "claude-code") -> dict[
         "agents": {
             "claude-code": {
                 "command": "claude",
-                "args": ["-p", "--output-format", "stream-json"],
+                "args": ["-p", "--output-format", "stream-json", "--verbose"],
                 "allowed_tools": ["Read", "Edit", "Bash", "Glob", "Grep"],
             },
             "codex": {

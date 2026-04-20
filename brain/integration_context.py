@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import importlib
 import importlib.util
+import os
 import sys
 from datetime import date
 from pathlib import Path
@@ -25,33 +26,68 @@ def build_daily_context(app_cfg: AppConfig, env_cfg: EnvConfig) -> DailyContext:
 
     try:
         calendar_client = _load_legacy_module("calendar_client")
-
         bundle.calendar_events = calendar_client.get_todays_events()
     except Exception:
         bundle.calendar_events = []
 
     try:
         gmail_client = _load_legacy_module("gmail_client")
-
         bundle.email_items = gmail_client.get_action_items()
     except Exception:
         bundle.email_items = []
 
     try:
         notion_client = _load_legacy_module("notion_client")
-
         bundle.notion_tasks = notion_client.get_open_tasks()
     except Exception:
         bundle.notion_tasks = []
 
+    if token := os.getenv("GITHUB_TOKEN"):
+        bundle.github_items = _fetch_github_items(token)
+
+    if token := os.getenv("SLACK_BOT_TOKEN"):
+        bundle.slack_items = _fetch_slack_items(token)
+
     try:
         news_client = _load_legacy_module("news_client")
-
         bundle.reading_list = news_client.get_reading_list(bundle.vault_notes)
     except Exception:
         bundle.reading_list = []
 
     return bundle
+
+
+def _fetch_github_items(token: str) -> list[dict]:
+    try:
+        import httpx
+        headers = {"Authorization": f"token {token}", "Accept": "application/vnd.github+json"}
+        items = []
+        prs = httpx.get("https://api.github.com/search/issues?q=is:pr+is:open+author:@me&per_page=10", headers=headers, timeout=10).json()
+        for i in (prs.get("items") or []):
+            items.append({"type": "pr", "title": i["title"], "url": i["html_url"], "repo": i["repository_url"].split("/")[-1]})
+        issues = httpx.get("https://api.github.com/search/issues?q=is:issue+is:open+assignee:@me&per_page=10", headers=headers, timeout=10).json()
+        for i in (issues.get("items") or []):
+            items.append({"type": "issue", "title": i["title"], "url": i["html_url"], "repo": i["repository_url"].split("/")[-1]})
+        return items
+    except Exception:
+        return []
+
+
+def _fetch_slack_items(token: str) -> list[dict]:
+    try:
+        import httpx
+        headers = {"Authorization": f"Bearer {token}"}
+        channels = httpx.get("https://slack.com/api/conversations.list?limit=10&exclude_archived=true", headers=headers, timeout=10).json()
+        items = []
+        for ch in (channels.get("channels") or [])[:5]:
+            hist = httpx.get(f"https://slack.com/api/conversations.history?channel={ch['id']}&limit=3", headers=headers, timeout=10).json()
+            for msg in (hist.get("messages") or []):
+                text = msg.get("text", "").strip()
+                if text:
+                    items.append({"channel": ch["name"], "text": text[:140]})
+        return items
+    except Exception:
+        return []
 
 
 def _configure_legacy_modules(legacy_config, app_cfg: AppConfig, env_cfg: EnvConfig) -> None:

@@ -13,8 +13,9 @@ from threading import Timer
 
 import uvicorn
 from fastapi import FastAPI, Query, WebSocket, WebSocketDisconnect
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 
+from brain import integrations_api, mcp_config
 from brain.agent_backends import get_backend
 from brain.daily import generate_daily_note
 from brain.env_config import integration_status
@@ -77,9 +78,9 @@ def create_app(runtime: AppRuntime) -> FastAPI:
         )
 
     @app.post("/api/daily")
-    async def post_daily():
+    async def post_daily(force: bool = Query(default=False)):
         try:
-            path = generate_daily_note(runtime.app_cfg, runtime.env_cfg, force=False)
+            path = generate_daily_note(runtime.app_cfg, runtime.env_cfg, force=force)
             return JSONResponse({"status": "ok", "path": str(path)})
         except FileExistsError as exc:
             return JSONResponse({"status": "error", "message": str(exc)}, status_code=409)
@@ -109,7 +110,7 @@ def create_app(runtime: AppRuntime) -> FastAPI:
                 "date": selected_date_iso,
                 "path": relative_path,
                 "exists": content is not None,
-                "content": content or "",
+                "content": _strip_frontmatter(content or ""),
             }
         )
 
@@ -209,11 +210,24 @@ def create_app(runtime: AppRuntime) -> FastAPI:
         finally:
             await runtime.session_manager.detach_websocket(websocket)
 
+    @app.post("/api/seed")
+    async def post_seed():
+        from brain.seeder import SeedSources, run_seed_streaming
+        vault_path = runtime.app_cfg.vault.path
+
+        async def _stream():
+            async for line in run_seed_streaming(vault_path, agent=runtime.app_cfg.agent, env_cfg=runtime.env_cfg):
+                yield line + "\n"
+
+        return StreamingResponse(_stream(), media_type="text/plain")
+
+    integrations_api.register(app, runtime)
     return app
 
 
 async def _run_backend_stream(runtime: AppRuntime, websocket: WebSocket, user_message: str) -> None:
     backend = get_backend(runtime.app_cfg)
+    mcp_config.sync_from_env(runtime.app_cfg.agent)
     session = runtime.session_manager.get_or_create_session()
     vault_paths = resolve_vault_paths(runtime.app_cfg)
     prompt = (
@@ -264,6 +278,14 @@ async def _run_backend_stream(runtime: AppRuntime, websocket: WebSocket, user_me
         else:
             runtime.session_manager.fail_run()
         await websocket.send_json({"type": "error", "message": str(exc)})
+
+
+def _strip_frontmatter(content: str) -> str:
+    if content.startswith("---"):
+        end = content.find("\n---", 3)
+        if end != -1:
+            return content[end + 4:].lstrip("\n")
+    return content
 
 
 def run_server(app_cfg: AppConfig, env_cfg: EnvConfig, *, open_browser: bool = True) -> None:

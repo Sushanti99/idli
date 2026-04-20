@@ -27,6 +27,7 @@ agents:
       - -p
       - --output-format
       - stream-json
+      - --verbose
     allowed_tools:
       - Read
       - Edit

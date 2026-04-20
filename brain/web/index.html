@@ -337,6 +337,36 @@
     code {
       font-family: "SFMono-Regular", "Menlo", monospace;
     }
+    .int-expand {
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+      border-top: 1px solid var(--line);
+      padding-top: 14px;
+      margin-top: 4px;
+    }
+    .int-expand.open { display: flex; }
+    .int-expand input {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px 14px;
+      font: inherit;
+      font-size: 14px;
+      background: var(--surface);
+      color: var(--text);
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .int-expand-msg { font-size: 13px; min-height: 18px; }
+    .int-expand-msg.ok { color: #1a7a50; }
+    .int-expand-msg.err { color: var(--accent); }
+    .int-expand p {
+      font-size: 13px;
+      color: var(--muted);
+      margin: 0;
+      line-height: 1.5;
+    }
+
     /* ── vault view ──────────────────────────────────────────────── */
     .vault-view {
       display: none;
@@ -430,25 +460,258 @@
       color: var(--muted);
       font-size: 15px;
     }
-    /* home icon button in header */
-    .home-btn {
-      width: 34px;
-      height: 34px;
-      padding: 0;
-      border-radius: 10px;
-      background: transparent;
+    /* ── integrations view ──────────────────────────────────────────── */
+    .integrations-view {
+      display: none;
+      flex: 1;
+      min-height: 0;
+      flex-direction: column;
+      overflow-y: auto;
+      padding: 32px 36px;
+      gap: 28px;
+    }
+    .integrations-view.active { display: flex; }
+    .integrations-header { flex-shrink: 0; }
+    .integrations-title {
+      font-size: 22px;
+      font-weight: 700;
+      margin: 0 0 6px;
+    }
+    .integrations-sub {
       color: var(--muted);
-      border: 1px solid transparent;
-      display: inline-flex;
+      font-size: 15px;
+      margin: 0;
+    }
+    .integrations-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    .int-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transition: border-color 140ms, box-shadow 140ms;
+    }
+    .int-card:hover { border-color: var(--accent); box-shadow: 0 4px 20px var(--shadow); }
+    .int-card-top {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .int-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
       align-items: center;
       justify-content: center;
-      cursor: pointer;
-      transition: background 120ms, color 120ms, border-color 120ms;
-      margin-left: 10px;
-      vertical-align: middle;
+      font-size: 22px;
+      flex-shrink: 0;
+      background: var(--soft);
     }
-    .home-btn:hover { background: var(--soft); color: var(--text); border-color: var(--line); }
-    .home-btn.active { background: var(--soft); color: var(--accent); border-color: var(--accent); }
+    .int-name {
+      font-size: 16px;
+      font-weight: 700;
+    }
+    .int-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: var(--soft);
+      color: var(--muted);
+    }
+    .int-badge.connected {
+      background: rgba(36, 130, 90, 0.12);
+      color: #1a7a50;
+    }
+    .int-badge.connected::before {
+      content: '';
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #22a06b;
+      display: inline-block;
+    }
+    .int-badge.soon {
+      background: var(--soft);
+      color: var(--muted);
+    }
+    :root[data-theme="dark"] .int-badge.connected {
+      background: rgba(34, 160, 107, 0.18);
+      color: #4dc997;
+    }
+    .int-desc {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.5;
+      margin: 0;
+    }
+    .int-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .int-btn {
+      font-size: 13px;
+      padding: 8px 16px;
+      border-radius: 999px;
+    }
+    .int-btn.disconnect {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--line);
+    }
+    .int-btn.disconnect:hover { color: var(--accent); border-color: var(--accent); background: transparent; }
+
+    /* ── tab nav ─────────────────────────────────────────────────── */
+    .tab-bar {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      background: var(--soft);
+      border-radius: 12px;
+      padding: 3px;
+    }
+    .tab-btn {
+      padding: 6px 16px;
+      border-radius: 9px;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 120ms, color 120ms;
+      white-space: nowrap;
+    }
+    .tab-btn:hover { color: var(--text); }
+    .tab-btn.active { background: var(--bg); color: var(--accent); box-shadow: 0 1px 4px var(--shadow); }
+
+    /* ── home view ────────────────────────────────────────────────── */
+    .home-view {
+      display: none;
+      flex: 1;
+      min-height: 0;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .home-view.active { display: flex; }
+    .home-section { display: flex; flex-direction: column; gap: 10px; }
+    .home-section-title { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+    .home-int-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .home-int-chip {
+      display: flex; align-items: center; gap: 7px;
+      padding: 6px 14px; border-radius: 999px;
+      border: 1px solid var(--line); font-size: 13px; font-weight: 600;
+      background: var(--surface);
+    }
+    .home-int-chip.on  { border-color: #22a06b44; color: #1a7a50; }
+    .home-int-chip.off { color: var(--muted); }
+    :root[data-theme="dark"] .home-int-chip.on { color: #4dc997; border-color: #22a06b55; }
+    .seed-box {
+      background: var(--surface); border: 1px solid var(--line);
+      border-radius: 18px; padding: 24px 28px; display: flex;
+      flex-direction: column; gap: 16px;
+    }
+    .seed-box h3 { margin: 0; font-size: 16px; }
+    .seed-box p  { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.5; }
+    #seedBtn { align-self: flex-start; }
+    .seed-log {
+      display: none; background: var(--soft); border-radius: 12px;
+      padding: 14px 16px; font-size: 13px; font-family: monospace;
+      line-height: 1.7; max-height: 200px; overflow-y: auto;
+      white-space: pre-wrap; color: var(--text);
+    }
+    .seed-log.visible { display: block; }
+
+    /* ── home two-pane layout ─────────────────────────────────────── */
+    .home-body {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: 0;
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+    }
+    .home-left {
+      border-right: 1px solid var(--line);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      padding: 28px 24px;
+      overflow-y: auto;
+    }
+    .home-right {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      min-height: 0;
+      overflow: hidden;
+    }
+    .vault-tree {
+      border-right: 1px solid var(--line);
+      overflow-y: auto;
+      padding: 16px 0;
+    }
+    .vault-tree-header {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 0 16px 10px;
+    }
+    .vault-folder-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 8px 16px 4px;
+    }
+    .vault-file-btn {
+      display: block;
+      width: 100%;
+      text-align: left;
+      padding: 5px 16px;
+      background: none;
+      border: none;
+      color: var(--text);
+      font: inherit;
+      font-size: 13px;
+      cursor: pointer;
+      border-radius: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .vault-file-btn:hover { background: var(--soft); }
+    .vault-file-btn.active { background: var(--soft); color: var(--accent); font-weight: 600; }
+    .vault-content {
+      overflow-y: auto;
+      padding: 28px 32px;
+    }
+    .vault-content-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      color: var(--text);
+    }
+    .vault-empty {
+      color: var(--muted);
+      font-size: 14px;
+      padding: 20px 0;
+    }
+    @media (max-width: 860px) {
+      .home-body { grid-template-columns: 1fr; }
+      .home-right { grid-template-columns: 1fr; }
+    }
     @media (max-width: 860px) {
       .layout {
         grid-template-columns: 1fr;
@@ -499,7 +762,7 @@
 <body>
   <div class="shell">
     <header class="app-header">
-      <div style="display:flex;align-items:center;gap:4px;">
+      <div style="display:flex;align-items:center;gap:12px;">
         <div>
           <div class="title">brain²</div>
           <div class="meta">
@@ -508,12 +771,11 @@
             <span id="session">session: disconnected</span>
           </div>
         </div>
-        <button class="home-btn" id="homeBtn" type="button" title="Vault files">
-          <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M3 9.5L10 3l7 6.5V17a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
-            <path d="M7.5 18v-5h5v5" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
-          </svg>
-        </button>
+        <nav class="tab-bar">
+          <button class="tab-btn" id="tabHome" type="button">Home</button>
+          <button class="tab-btn active" id="tabTasks" type="button">Tasks</button>
+          <button class="tab-btn" id="tabInt" type="button">Integrations</button>
+        </nav>
       </div>
       <div class="actions">
         <label class="theme-control" for="themeSelect">
@@ -542,7 +804,7 @@
         </div>
         <div class="daily-toolbar">
           <button class="secondary" id="dailyBtn" type="button">Generate Daily</button>
-          <button class="ghost" id="refreshDailyBtn" type="button">Refresh</button>
+          <button class="ghost" id="refreshDailyBtn" type="button">Regenerate</button>
         </div>
         <div class="daily-status" id="dailyStatus">Loading daily note...</div>
         <div class="daily-content" id="dailyContent"></div>
@@ -559,20 +821,54 @@
       </section>
     </div>
 
-    <!-- Vault view (replaces layout when home is active) -->
-    <div class="vault-view" id="vaultView">
-      <aside class="vault-tree">
-        <div class="vault-tree-header">Vault</div>
-        <div class="vault-tree-list" id="vaultTreeList"></div>
-      </aside>
-      <section class="vault-content">
-        <div class="vault-content-header" id="vaultContentHeader" style="display:none;">
-          <div class="vault-content-title" id="vaultContentTitle"></div>
+    <!-- Integrations view -->
+    <div class="integrations-view" id="intView">
+      <div class="integrations-header">
+        <h2 class="integrations-title">Integrations</h2>
+        <p class="integrations-sub">Connect your tools. brain² pulls context from them into your vault.</p>
+      </div>
+      <div class="integrations-grid" id="intGrid"></div>
+    </div>
+
+    <!-- Home view -->
+    <div class="home-view" id="homeView">
+      <div class="home-body">
+
+        <!-- Left: seed controls -->
+        <div class="home-left">
+          <div>
+            <div style="font-size:18px;font-weight:700;margin-bottom:4px;">Your vault</div>
+            <div style="color:var(--muted);font-size:14px;">Everything your brain² knows lives here.</div>
+          </div>
+
+          <div class="home-section">
+            <div class="home-section-title">Connected</div>
+            <div class="home-int-row" id="homeIntRow">
+              <div style="color:var(--muted);font-size:13px;">Loading...</div>
+            </div>
+          </div>
+
+          <div class="seed-box">
+            <h3 style="margin:0 0 6px;font-size:15px;">Seed from connected tools</h3>
+            <p style="margin:0 0 14px;font-size:13px;color:var(--muted);line-height:1.5;">Pull context from Gmail, Calendar, Notion, GitHub, Slack, and Linear into your vault. Re-run anytime to refresh.</p>
+            <button id="seedBtn" type="button">Seed Vault</button>
+            <div class="seed-log" id="seedLog"></div>
+          </div>
         </div>
-        <div class="vault-content-body daily-note" id="vaultContentBody">
-          <div class="vault-empty">Select a file to read it.</div>
+
+        <!-- Right: vault file browser -->
+        <div class="home-right">
+          <div class="vault-tree">
+            <div class="vault-tree-header">Vault</div>
+            <div id="homeTreeList"><div class="vault-empty" style="padding:0 16px;">Loading...</div></div>
+          </div>
+          <div class="vault-content">
+            <div id="homeFileTitle" class="vault-content-title" style="display:none;"></div>
+            <div id="homeFileBody"><div class="vault-empty">Select a file to read it.</div></div>
+          </div>
         </div>
-      </section>
+
+      </div>
     </div>
 
   </div>
@@ -826,7 +1122,23 @@
     });
 
     refreshDailyBtn.addEventListener("click", async () => {
-      await loadDailyNote();
+      if (dailyOffset !== 0) { await loadDailyNote(); return; }
+      setDailyStatus("Regenerating daily note...");
+      refreshDailyBtn.disabled = true;
+      try {
+        const response = await fetch("/api/daily?force=true", { method: "POST" });
+        const payload = await response.json();
+        if (response.ok) {
+          dailyOffset = 0;
+          await loadDailyNote();
+        } else {
+          setDailyStatus(payload.message || "Failed to regenerate.");
+        }
+      } catch (error) {
+        setDailyStatus(error.message || "Failed to regenerate.");
+      } finally {
+        refreshDailyBtn.disabled = false;
+      }
     });
 
     prevDayBtn.addEventListener("click", async () => {
@@ -873,81 +1185,337 @@
       updateStatus("Ready.");
     });
 
-    // ── vault view ─────────────────────────────────────────────────────────────
-    const homeBtn = document.getElementById("homeBtn");
     const layoutEl = document.querySelector(".layout");
-    const vaultView = document.getElementById("vaultView");
-    const vaultTreeList = document.getElementById("vaultTreeList");
-    const vaultContentBody = document.getElementById("vaultContentBody");
-    const vaultContentTitle = document.getElementById("vaultContentTitle");
-    const vaultContentHeader = document.getElementById("vaultContentHeader");
-    let vaultMode = false;
-    let activeFileBtn = null;
+    // ── 3-tab navigation ───────────────────────────────────────────────────────
+    const tabHome  = document.getElementById("tabHome");
+    const tabTasks = document.getElementById("tabTasks");
+    const tabInt   = document.getElementById("tabInt");
+    const homeView = document.getElementById("homeView");
+    const intView  = document.getElementById("intView");
+    const intGrid  = document.getElementById("intGrid");
 
-    function enterVaultMode() {
-      vaultMode = true;
-      homeBtn.classList.add("active");
-      layoutEl.style.display = "none";
-      vaultView.classList.add("active");
+    const TABS = [
+      { btn: tabHome,  view: homeView,  onEnter: loadHomeView },
+      { btn: tabTasks, view: layoutEl,  onEnter: null },
+      { btn: tabInt,   view: intView,   onEnter: loadIntegrations },
+    ];
+
+    function switchTab(index) {
+      TABS.forEach((t, i) => {
+        t.btn.classList.toggle("active", i === index);
+        if (t.view) t.view.classList.toggle("active", i === index);
+        if (t.view === layoutEl) t.view.style.display = i === index ? "" : "none";
+      });
+      if (TABS[index].onEnter) TABS[index].onEnter();
+    }
+
+    tabHome.addEventListener("click",  () => switchTab(0));
+    tabTasks.addEventListener("click", () => switchTab(1));
+    tabInt.addEventListener("click",   () => switchTab(2));
+
+    // Tasks view is active by default — ensure layout is visible
+    layoutEl.style.display = "";
+
+    // ── home view ──────────────────────────────────────────────────────────────
+    const seedBtn = document.getElementById("seedBtn");
+    const seedLog = document.getElementById("seedLog");
+
+    let homeActiveFileBtn = null;
+
+    async function loadHomeView() {
+      loadHomeIntStatus();
       loadVaultTree();
     }
 
-    function exitVaultMode() {
-      vaultMode = false;
-      homeBtn.classList.remove("active");
-      layoutEl.style.display = "";
-      vaultView.classList.remove("active");
+    async function loadHomeIntStatus() {
+      const homeIntRow = document.getElementById("homeIntRow");
+      homeIntRow.innerHTML = `<div style="color:var(--muted);font-size:13px;">Loading...</div>`;
+      try {
+        const resp = await fetch("/api/integrations/status");
+        const status = await resp.json();
+        homeIntRow.innerHTML = "";
+        const icons = { gmail:"✉️", calendar:"📅", notion:"📄", slack:"💬", github:"🐙", linear:"📐" };
+        for (const [key, connected] of Object.entries(status)) {
+          if (key === "whatsapp" || key === "imessage" || key === "linkedin") continue;
+          const chip = document.createElement("div");
+          chip.className = "home-int-chip " + (connected ? "on" : "off");
+          chip.innerHTML = `<span>${icons[key] || "🔌"}</span><span>${key.charAt(0).toUpperCase()+key.slice(1)}</span>`;
+          homeIntRow.appendChild(chip);
+        }
+      } catch {
+        homeIntRow.innerHTML = `<div style="color:var(--muted);font-size:13px;">Could not load status.</div>`;
+      }
     }
 
-    homeBtn.addEventListener("click", () => {
-      vaultMode ? exitVaultMode() : enterVaultMode();
-    });
-
     async function loadVaultTree() {
-      vaultTreeList.innerHTML = `<div style="padding:12px;color:var(--muted);font-size:14px;">Loading...</div>`;
+      const treeList = document.getElementById("homeTreeList");
+      treeList.innerHTML = `<div class="vault-empty" style="padding:0 16px;">Loading...</div>`;
       try {
         const resp = await fetch("/api/notes");
         const data = await resp.json();
         if (!data.notes || !data.notes.length) {
-          vaultTreeList.innerHTML = `<div style="padding:12px;color:var(--muted);font-size:14px;">No notes found.</div>`;
+          treeList.innerHTML = `<div class="vault-empty" style="padding:0 16px;">No notes yet. Seed your vault to get started.</div>`;
           return;
         }
         const groups = {};
         for (const note of data.notes) {
           (groups[note.folder] = groups[note.folder] || []).push(note);
         }
-        vaultTreeList.innerHTML = "";
+        treeList.innerHTML = "";
         for (const [folder, notes] of Object.entries(groups)) {
           const lbl = document.createElement("div");
           lbl.className = "vault-folder-label";
           lbl.textContent = folder;
-          vaultTreeList.appendChild(lbl);
+          treeList.appendChild(lbl);
           for (const note of notes) {
             const btn = document.createElement("button");
             btn.className = "vault-file-btn";
             btn.textContent = note.title;
-            btn.addEventListener("click", () => openVaultFile(note, btn));
-            vaultTreeList.appendChild(btn);
+            btn.addEventListener("click", () => openHomeFile(note, btn));
+            treeList.appendChild(btn);
           }
         }
       } catch {
-        vaultTreeList.innerHTML = `<div style="padding:12px;color:var(--muted);font-size:14px;">Failed to load vault.</div>`;
+        treeList.innerHTML = `<div class="vault-empty" style="padding:0 16px;">Failed to load vault.</div>`;
       }
     }
 
-    async function openVaultFile(note, btn) {
-      if (activeFileBtn) activeFileBtn.classList.remove("active");
-      activeFileBtn = btn;
+    async function openHomeFile(note, btn) {
+      if (homeActiveFileBtn) homeActiveFileBtn.classList.remove("active");
+      homeActiveFileBtn = btn;
       btn.classList.add("active");
-      vaultContentTitle.textContent = note.title;
-      vaultContentHeader.style.display = "flex";
-      vaultContentBody.innerHTML = `<div class="vault-empty">Loading...</div>`;
+      const titleEl = document.getElementById("homeFileTitle");
+      const bodyEl  = document.getElementById("homeFileBody");
+      titleEl.style.display = "block";
+      titleEl.textContent = note.title;
+      bodyEl.innerHTML = `<div class="vault-empty">Loading...</div>`;
       try {
         const resp = await fetch(`/api/notes/${note.path}`);
         const data = await resp.json();
-        vaultContentBody.innerHTML = marked.parse(data.content || "*(empty)*");
+        bodyEl.innerHTML = `<div class="daily-note">${marked.parse(data.content || "*(empty)*")}</div>`;
       } catch {
-        vaultContentBody.innerHTML = `<div class="vault-empty">Failed to load file.</div>`;
+        bodyEl.innerHTML = `<div class="vault-empty">Failed to load file.</div>`;
+      }
+    }
+
+    seedBtn.addEventListener("click", async () => {
+      seedBtn.disabled = true;
+      seedBtn.textContent = "Seeding...";
+      seedLog.className = "seed-log visible";
+      seedLog.textContent = "";
+
+      try {
+        const resp = await fetch("/api/seed", { method: "POST" });
+        const reader = resp.body.getReader();
+        const dec = new TextDecoder();
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          seedLog.textContent += dec.decode(value);
+          seedLog.scrollTop = seedLog.scrollHeight;
+        }
+      } catch (e) {
+        seedLog.textContent += `\nError: ${e.message}`;
+      }
+
+      seedBtn.disabled = false;
+      seedBtn.textContent = "Seed Vault";
+      loadVaultTree();
+    });
+
+    // ── integrations view ──────────────────────────────────────────────────────
+
+    const INTEGRATIONS = [
+      { id: "gmail",    name: "Gmail",            icon: "✉️",  desc: "Pull recent emails and action items into your daily note.",       oauth: true  },
+      { id: "calendar", name: "Google Calendar",  icon: "📅",  desc: "Show today's events and upcoming meetings in your daily note.",   oauth: true  },
+      { id: "notion",   name: "Notion",           icon: "📄",  desc: "Sync open tasks and pages from your Notion workspace.",           inline: true },
+      { id: "slack",    name: "Slack",            icon: "💬",  desc: "Surface unread threads and mentions as daily context.",           inline: true, inlineType: "slack"   },
+      { id: "github",   name: "GitHub",           icon: "🐙",  desc: "Track open PRs, issues, and review requests.",                   inline: true, inlineType: "github" },
+      { id: "linear",   name: "Linear",           icon: "📐",  desc: "Track issues and project updates from Linear.",                  inline: true, inlineType: "linear" },
+      { id: "whatsapp", name: "WhatsApp",         icon: "📱",  desc: "Bring WhatsApp message context into your vault.",                soon: true   },
+      { id: "imessage", name: "iMessage",         icon: "💬",  desc: "Pull iMessage threads on Mac into daily context.",               soon: true   },
+      { id: "linkedin", name: "LinkedIn",         icon: "💼",  desc: "Track messages and connection activity.",                        soon: true   },
+    ];
+
+    function renderIntCard(integration, connected) {
+      const { id, name, icon, desc, soon, inline } = integration;
+      const card = document.createElement("div");
+      card.className = "int-card";
+
+      const badgeClass = soon ? "soon" : connected ? "connected" : "";
+      const badgeText  = soon ? "Coming soon" : connected ? "Connected" : "Not connected";
+
+      card.innerHTML = `
+        <div class="int-card-top">
+          <div class="int-icon">${icon}</div>
+          <div>
+            <div class="int-name">${name}</div>
+            <span class="int-badge ${badgeClass}" id="badge-${id}">${badgeText}</span>
+          </div>
+        </div>
+        <p class="int-desc">${desc}</p>
+        <div class="int-actions">
+          ${soon
+            ? `<button class="int-btn ghost" disabled>Coming soon</button>`
+            : connected
+              ? `<button class="int-btn ghost disconnect" data-id="${id}" data-action="disconnect">Disconnect</button>`
+              : `<button class="int-btn" data-id="${id}" data-action="connect">Connect</button>`
+          }
+        </div>
+        ${inline && !connected && !soon ? `
+        <div class="int-expand" id="expand-${id}">
+          ${id === "linear" ? `
+          <p>Go to <a href="https://linear.app" target="_blank">linear.app</a> → Settings → Account → Security → API Keys → Create key.</p>
+          <input id="linear-key" type="password" placeholder="lin_api_..." autocomplete="off">
+          <div class="int-expand-msg" id="linear-msg"></div>
+          <div class="row"><button class="int-btn" onclick="saveLinearKey()">Save</button></div>`
+          : id === "github" ? `
+          <p>Go to <a href="https://github.com/settings/tokens/new?scopes=repo,notifications,read:user" target="_blank">github.com/settings/tokens</a> → Generate new token (classic) → copy it.</p>
+          <input id="github-key" type="password" placeholder="ghp_..." autocomplete="off">
+          <div class="int-expand-msg" id="github-msg"></div>
+          <div class="row"><button class="int-btn" onclick="saveGithubKey()">Save</button></div>`
+          : id === "slack" ? `
+          <p>Go to <a href="https://api.slack.com/apps" target="_blank">api.slack.com/apps</a> → Create app → OAuth & Permissions → add scopes → Install → copy Bot Token.</p>
+          <input id="slack-key" type="password" placeholder="xoxb-..." autocomplete="off">
+          <div class="int-expand-msg" id="slack-msg"></div>
+          <div class="row"><button class="int-btn" onclick="saveSlackKey()">Save</button></div>` : `
+          <p>Go to <a href="https://www.notion.so/my-integrations" target="_blank">notion.so/my-integrations</a> → New integration → copy the secret.</p>
+          <input id="notion-key" type="password" placeholder="secret_..." autocomplete="off">
+          <div class="int-expand-msg" id="notion-msg"></div>
+          <div class="row"><button class="int-btn" onclick="saveNotionKey()">Save</button></div>`}
+        </div>` : ""}
+      `;
+
+      card.querySelectorAll("[data-action]").forEach(btn => {
+        btn.addEventListener("click", () => handleIntAction(id, btn.dataset.action));
+      });
+
+      return card;
+    }
+
+    async function saveNotionKey() {
+      const input = document.getElementById("notion-key");
+      const msg = document.getElementById("notion-msg");
+      const key = input ? input.value.trim() : "";
+      if (!key) { msg.className = "int-expand-msg err"; msg.textContent = "Paste your integration secret first."; return; }
+      msg.className = "int-expand-msg"; msg.textContent = "Saving...";
+      const res = await fetch("/api/integrations/notion/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: "api_key=" + encodeURIComponent(key)
+      });
+      const data = await res.json();
+      if (data.status === "ok") {
+        msg.className = "int-expand-msg ok"; msg.textContent = "✓ Connected!";
+        setTimeout(() => loadIntegrations(), 800);
+      } else {
+        msg.className = "int-expand-msg err"; msg.textContent = data.message || "Something went wrong.";
+      }
+    }
+
+    async function saveGithubKey() {
+      const input = document.getElementById("github-key");
+      const msg = document.getElementById("github-msg");
+      const key = input ? input.value.trim() : "";
+      if (!key) { msg.className = "int-expand-msg err"; msg.textContent = "Paste your token first."; return; }
+      msg.className = "int-expand-msg"; msg.textContent = "Saving...";
+      const res = await fetch("/api/integrations/github/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: "api_key=" + encodeURIComponent(key)
+      });
+      const data = await res.json();
+      if (data.status === "ok") {
+        msg.className = "int-expand-msg ok"; msg.textContent = "✓ Connected!";
+        setTimeout(() => loadIntegrations(), 800);
+      } else {
+        msg.className = "int-expand-msg err"; msg.textContent = data.message || "Something went wrong.";
+      }
+    }
+
+    async function saveSlackKey() {
+      const input = document.getElementById("slack-key");
+      const msg = document.getElementById("slack-msg");
+      const key = input ? input.value.trim() : "";
+      if (!key) { msg.className = "int-expand-msg err"; msg.textContent = "Paste your bot token first."; return; }
+      msg.className = "int-expand-msg"; msg.textContent = "Saving...";
+      const res = await fetch("/api/integrations/slack/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: "api_key=" + encodeURIComponent(key)
+      });
+      const data = await res.json();
+      if (data.status === "ok") {
+        msg.className = "int-expand-msg ok"; msg.textContent = "✓ Connected!";
+        setTimeout(() => loadIntegrations(), 800);
+      } else {
+        msg.className = "int-expand-msg err"; msg.textContent = data.message || "Something went wrong.";
+      }
+    }
+
+    async function saveLinearKey() {
+      const input = document.getElementById("linear-key");
+      const msg = document.getElementById("linear-msg");
+      const key = input ? input.value.trim() : "";
+      if (!key) { msg.className = "int-expand-msg err"; msg.textContent = "Paste your API key first."; return; }
+      msg.className = "int-expand-msg"; msg.textContent = "Saving...";
+      const res = await fetch("/api/integrations/linear/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: "api_key=" + encodeURIComponent(key)
+      });
+      const data = await res.json();
+      if (data.status === "ok") {
+        msg.className = "int-expand-msg ok"; msg.textContent = "✓ Connected!";
+        setTimeout(() => loadIntegrations(), 800);
+      } else {
+        msg.className = "int-expand-msg err"; msg.textContent = data.message || "Something went wrong.";
+      }
+    }
+
+    async function loadIntegrations() {
+      intGrid.innerHTML = `<div style="color:var(--muted);font-size:14px;">Loading...</div>`;
+      let status = {};
+      try {
+        const resp = await fetch("/api/integrations/status");
+        if (resp.ok) status = await resp.json();
+      } catch { /* server may not have endpoint yet — show all disconnected */ }
+
+      intGrid.innerHTML = "";
+      for (const integration of INTEGRATIONS) {
+        intGrid.appendChild(renderIntCard(integration, !!status[integration.id]));
+      }
+    }
+
+    function backendId(id) {
+      if (id === "gmail" || id === "calendar") return "google";
+      return id;
+    }
+
+    async function handleIntAction(id, action) {
+      const bid = backendId(id);
+      const integration = INTEGRATIONS.find(i => i.id === id);
+
+      if (action === "connect") {
+        if (integration && integration.inline) {
+          const expand = document.getElementById(`expand-${id}`);
+          if (expand) expand.classList.toggle("open");
+          return;
+        }
+        const popup = window.open(
+          `/api/integrations/${bid}/connect`,
+          `connect-${bid}`,
+          "width=580,height=660,menubar=no,toolbar=no,location=no"
+        );
+        const poll = setInterval(() => {
+          if (popup && popup.closed) {
+            clearInterval(poll);
+            loadIntegrations();
+          }
+        }, 500);
+      } else if (action === "disconnect") {
+        await fetch(`/api/integrations/${bid}/disconnect`, { method: "POST" });
+        loadIntegrations();
       }
     }
 
