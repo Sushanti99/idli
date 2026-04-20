@@ -103,6 +103,8 @@ class DailyContext:
     calendar_events: list[dict[str, Any]] = field(default_factory=list)
     email_items: list[dict[str, Any]] = field(default_factory=list)
     notion_tasks: list[dict[str, Any]] = field(default_factory=list)
+    github_items: list[dict[str, Any]] = field(default_factory=list)
+    slack_items: list[dict[str, Any]] = field(default_factory=list)
     reading_list: list[dict[str, Any]] = field(default_factory=list)
     today: str = ""
 

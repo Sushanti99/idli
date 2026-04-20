@@ -26,6 +26,8 @@ def render_daily_note(bundle: DailyContext) -> str:
         + (["calendar"] if bundle.calendar_events else [])
         + (["gmail"] if bundle.email_items else [])
         + (["notion"] if bundle.notion_tasks else [])
+        + (["github"] if bundle.github_items else [])
+        + (["slack"] if bundle.slack_items else [])
         + (["news"] if bundle.reading_list else [])
     )
 
@@ -89,6 +91,21 @@ def render_daily_note(bundle: DailyContext) -> str:
             lines.append(line)
     else:
         lines.append("*No open Notion tasks.*")
+
+    lines += ["", "## GitHub", ""]
+    if bundle.github_items:
+        for item in bundle.github_items:
+            label = "PR" if item["type"] == "pr" else "Issue"
+            lines.append(f"- [{label}] [{item['title']}]({item['url']}) `{item['repo']}`")
+    else:
+        lines.append("*No open PRs or assigned issues.*")
+
+    lines += ["", "## Slack", ""]
+    if bundle.slack_items:
+        for item in bundle.slack_items:
+            lines.append(f"- #{item['channel']}: {item['text']}")
+    else:
+        lines.append("*No recent Slack messages.*")
 
     lines += ["", "## Reading — Today's Links", ""]
     if bundle.reading_list:

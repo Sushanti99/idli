@@ -110,7 +110,7 @@ def create_app(runtime: AppRuntime) -> FastAPI:
                 "date": selected_date_iso,
                 "path": relative_path,
                 "exists": content is not None,
-                "content": content or "",
+                "content": _strip_frontmatter(content or ""),
             }
         )
 
@@ -278,6 +278,14 @@ async def _run_backend_stream(runtime: AppRuntime, websocket: WebSocket, user_me
         else:
             runtime.session_manager.fail_run()
         await websocket.send_json({"type": "error", "message": str(exc)})
+
+
+def _strip_frontmatter(content: str) -> str:
+    if content.startswith("---"):
+        end = content.find("\n---", 3)
+        if end != -1:
+            return content[end + 4:].lstrip("\n")
+    return content
 
 
 def run_server(app_cfg: AppConfig, env_cfg: EnvConfig, *, open_browser: bool = True) -> None:
