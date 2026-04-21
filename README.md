@@ -4,7 +4,7 @@
 
 <h1 align="center">brain² (BrainSquared)</h1>
 
-<p align="center">Your second brain, on your laptop. No cloud. No subscriptions. Just your data and an AI that knows it.</p>
+<p align="center">One interface for every app you use. Powered by AI that knows your context.</p>
 
 <p align="center">
   <a href="https://pypi.org/project/brainsquared/"><img src="https://img.shields.io/pypi/v/brainsquared" alt="PyPI"></a>
@@ -14,7 +14,11 @@
 
 ---
 
-brain² connects your tools — Gmail, Google Calendar, Notion, GitHub, Slack, Linear — and pulls them into a local Obsidian vault it manages for you. Every morning it generates a daily note with your tasks, events, and action items. You tick things off, chat with the AI, and your vault grows smarter over time. Everything runs on your machine.
+Most of your day is spent context-switching. You check Gmail, switch to Slack, open Notion for a task, look at your calendar, review a GitHub PR — and repeat. Each app only knows its own slice of your life.
+
+brain² connects all of them. It builds a living knowledge base from your tools — using LLMs to maintain and update it like a wiki, not a data dump — and gives you one place to read, act, and stay on top of everything. Need to reply to an email? See what's on your calendar? Get reminded about a Slack thread you never answered? Close out an issue? brain² surfaces it all, lets you act on it, and learns from it.
+
+Everything runs locally. No cloud middleman. Your data stays yours.
 
 ---
 
@@ -23,30 +27,27 @@ brain² connects your tools — Gmail, Google Calendar, Notion, GitHub, Slack, L
 ```
 Browser UI  ──►  brain² Server  ──►  Claude Code / Codex CLI
                                               │
-                                       Obsidian Vault (markdown)
+                                     Local Knowledge Base (Obsidian vault)
                                               │
-                             Gmail · Calendar · GitHub · Notion · Slack · Linear · RSS
+                        Gmail · Calendar · GitHub · Slack · Notion · Linear · ...
 ```
 
-- **Obsidian is the database.** No SQLite, no Redis — just markdown files you already own.
-- **Daily note as your task hub.** Tasks, events, emails, and PRs pulled fresh each day. Tick things off — they don't come back tomorrow.
-- **The agent is swappable.** Claude Code or Codex, configured at startup.
-- **Karpathy-style vault updates.** When you connect a new tool, brain² surgically updates your existing notes rather than dumping raw data.
-- **Everything is local.** Your vault, your machine, your data.
+brain² treats your tools as sources of truth and your local vault as a continuously updated knowledge base. When you connect a new integration, the AI reads your existing notes and makes surgical edits — updating what's relevant, adding only what has no home yet. Nothing gets overwritten wholesale.
+
+Every day you get a unified view of what needs your attention. You act on it. What you finish disappears tomorrow. What you don't comes back.
 
 ---
 
 ## Quickstart
 
-### 1. Install
-
 ```bash
 pip install brainsquared
+brain start --vault ~/my-vault
 ```
 
 Requires [Claude Code](https://claude.ai/code) (or Codex) installed and authenticated.
 
-### 2. Seed a new vault
+To seed your vault from existing data:
 
 ```bash
 brain seed --vault ~/my-vault \
@@ -56,54 +57,13 @@ brain seed --vault ~/my-vault \
            --from-calendar
 ```
 
-brain² collects your existing data, runs it through Claude, and populates:
-
-```
-my-vault/
-├── core/          ← profile, projects, interests, people
-├── references/    ← reference material
-├── daily/         ← today's note with tasks, events, emails
-├── thoughts/      ← AI conversation summaries (auto-written)
-└── system/        ← config and agent instructions
-```
-
-### 3. Start
-
-```bash
-brain start --vault ~/my-vault
-```
-
-Opens `http://localhost:3000`.
-
----
-
-## The UI
-
-brain² has a three-tab interface:
-
-**Tasks** — Your daily note lives here. Tasks from all your connected tools appear as interactive checkboxes. Tick something off and it won't show up tomorrow. Anything left unticked carries forward automatically. Use the ⚙ settings button to choose which integrations appear in your daily note.
-
-**Home** — Browse your vault and seed it from the UI. See which integrations are connected at a glance.
-
-**Integrations** — Connect your tools without touching a config file. Paste an API key or go through OAuth — brain² stores credentials locally and starts pulling context immediately.
-
-The panel between your daily note and the chat window is draggable. Your layout is remembered across sessions.
-
 ---
 
 ## Integrations
 
-| Integration | Used for |
-|---|---|
-| Google Calendar | Daily note events |
-| Gmail | Daily note action items |
-| GitHub | Open PRs and assigned issues |
-| Notion | Open tasks and pages |
-| Slack | Recent channel messages |
-| Linear | Issues via MCP |
-| RSS feeds | Reading list in daily note |
+We're building connections to every app people use daily. Current integrations include Gmail, Google Calendar, GitHub, Notion, Slack, and Linear — with many more on the way.
 
-All integrations are optional. brain² works with just a vault and Claude Code.
+Connect them through the UI. No config files, no manual credential wrangling. brain² starts pulling context immediately and keeps your knowledge base up to date as things change.
 
 ---
 
@@ -116,18 +76,6 @@ brain start   --vault PATH  [--agent claude-code|codex] [--port N] [--no-open]
 brain daily   --vault PATH  [--force]
 brain status  --vault PATH
 ```
-
----
-
-## Vault structure
-
-| Folder | Purpose |
-|---|---|
-| `core/` | Persistent notes: profile, projects, interests, people |
-| `references/` | Reference material, links, resources |
-| `daily/` | One note per day, generated from integrations |
-| `thoughts/` | Auto-written summaries of AI conversations |
-| `system/` | `brain.config.yaml` and agent instructions |
 
 ---
 
@@ -145,8 +93,9 @@ pytest -q
 
 ## Roadmap
 
+- [ ] More integrations — Linear, Jira, Figma, Zoom, iMessage, and more
 - [ ] `brain setup` — guided OAuth so each user owns their own Google credentials
-- [ ] Move integration clients into `brain/integrations/`
-- [ ] VPS deployment with Obsidian remote sync
+- [ ] Action layer — reply to emails, send Slack messages, create tasks, directly from brain²
+- [ ] VPS deployment with remote vault sync
 - [ ] Mobile access via Tailscale
-- [ ] Background scheduled daily note generation
+- [ ] Scheduled background updates
