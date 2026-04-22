@@ -37,13 +37,27 @@ def create_app(runtime: AppRuntime) -> FastAPI:
     app = FastAPI()
     app.state.runtime = runtime
 
+    # Headers to prevent browser caching during development
+    NO_CACHE_HEADERS = {
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        "Pragma": "no-cache",
+        "Expires": "0",
+    }
+
     @app.get("/")
     async def index():
-        return FileResponse(Path(__file__).parent / "web" / "index.html")
+        return FileResponse(
+            Path(__file__).parent / "web" / "index.html",
+            headers=NO_CACHE_HEADERS,
+        )
 
     @app.get("/brain-logo.png")
     async def logo():
-        return FileResponse(Path(__file__).parent / "web" / "brain-logo.png", media_type="image/png")
+        return FileResponse(
+            Path(__file__).parent / "web" / "brain-logo.png",
+            media_type="image/png",
+            headers=NO_CACHE_HEADERS,
+        )
 
     @app.get("/api/status")
     async def get_status():
