@@ -1532,6 +1532,7 @@
         setRunning(false);
         updateStatus("Ready.", true);
         activeAssistantMessage = null;
+        loadDailyNote();  // Auto-refresh daily note after AI response
         return;
       }
       if (payload.type === "busy") {
