@@ -51,11 +51,11 @@ def create_app(runtime: AppRuntime) -> FastAPI:
             headers=NO_CACHE_HEADERS,
         )
 
-    @app.get("/favicon.svg")
+    @app.get("/favicon.ico")
     async def favicon():
         return FileResponse(
-            Path(__file__).parent / "web" / "favicon.svg",
-            media_type="image/svg+xml",
+            Path(__file__).parent.parent / "brainsquared-favicon.ico",
+            media_type="image/x-icon",
             headers=NO_CACHE_HEADERS,
         )
 
