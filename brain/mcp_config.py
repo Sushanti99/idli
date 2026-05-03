@@ -34,8 +34,29 @@ def _remote_server(
     return data
 
 
+# Path to the built-in Google MCP server script.
+_GOOGLE_MCP_SERVER = str(Path(__file__).parent / "mcp_google_server.py")
+
 # MCP server definitions per backend.
 _SERVERS: dict[str, dict[str, dict[str, object]]] = {
+    "google": {
+        "claude-code": _stdio_server(
+            "/opt/homebrew/anaconda3/bin/python3",
+            [_GOOGLE_MCP_SERVER],
+            {
+                "credentials_file": "GOOGLE_CREDENTIALS_FILE",
+                "token_file": "GOOGLE_TOKEN_FILE",
+            },
+        ),
+        "codex": _stdio_server(
+            "/opt/homebrew/anaconda3/bin/python3",
+            [_GOOGLE_MCP_SERVER],
+            {
+                "credentials_file": "GOOGLE_CREDENTIALS_FILE",
+                "token_file": "GOOGLE_TOKEN_FILE",
+            },
+        ),
+    },
     "github": {
         "claude-code": _stdio_server(
             "npx",
@@ -347,6 +368,15 @@ def sync_from_env(agent: str | None = None, environ: Mapping[str, str] | None = 
     for integration_id, credentials in mappings.items():
         if any(value for value in credentials.values()):
             add_server(integration_id, credentials, agents=agent)
+
+    # Google: activate if token.json exists (OAuth already done via UI)
+    token_file = env.get("GOOGLE_TOKEN_FILE", "")
+    credentials_file = env.get("GOOGLE_CREDENTIALS_FILE", "")
+    if token_file and Path(token_file).exists():
+        add_server("google", {
+            "credentials_file": credentials_file,
+            "token_file": token_file,
+        }, agents=agent)
 
 
 def supported_integrations() -> list[str]:
