@@ -1236,6 +1236,13 @@
       color: var(--ink-muted);
       padding: 0 16px 12px;
     }
+    .vault-folder-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px 12px 6px 16px;
+    }
     .vault-folder-label {
       font-family: 'JetBrains Mono', monospace;
       font-size: 10px;
@@ -1243,7 +1250,27 @@
       letter-spacing: 0.08em;
       text-transform: uppercase;
       color: var(--ink-muted);
-      padding: 12px 16px 6px;
+      padding: 0;
+    }
+    .vault-folder-add {
+      width: 24px;
+      height: 24px;
+      border-radius: 999px;
+      border: 1px solid var(--rule);
+      background: var(--paper-raised);
+      color: var(--ink);
+      font: inherit;
+      font-size: 16px;
+      line-height: 1;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 160ms, background 160ms;
+    }
+    .vault-folder-add:hover {
+      background: var(--paper-sunken);
+      transform: translateY(-1px);
     }
     .vault-file-btn {
       display: block;
@@ -1279,6 +1306,84 @@
     .vault-empty {
       color: var(--ink-muted);
       font-size: 14px;
+    }
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(15, 12, 10, 0.46);
+      padding: 20px;
+      z-index: 40;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal-card {
+      width: min(420px, 100%);
+      background: var(--paper-raised);
+      border: 1px solid var(--rule);
+      border-radius: 24px;
+      box-shadow: 0 24px 80px rgba(19, 15, 12, 0.18);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .modal-card h3 {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 700;
+      font-family: 'Kalam', cursive;
+    }
+    .modal-card p {
+      margin: 0;
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--ink-muted);
+    }
+    .modal-card input {
+      border: 1px solid var(--rule);
+      border-radius: 14px;
+      padding: 12px 14px;
+      font: inherit;
+      font-size: 14px;
+      background: rgba(255,255,255,0.5);
+      color: var(--ink);
+      width: 100%;
+    }
+    :root[data-theme="dark"] .modal-card input {
+      background: rgba(255,255,255,0.06);
+    }
+    .modal-msg {
+      min-height: 18px;
+      font-size: 12px;
+      color: var(--ink-muted);
+    }
+    .modal-msg.err { color: var(--danger); }
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+    .modal-btn {
+      border: 1px solid var(--rule);
+      border-radius: 999px;
+      padding: 10px 16px;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      background: var(--paper);
+      color: var(--ink);
+    }
+    .modal-btn.primary {
+      background: var(--ink);
+      color: var(--paper);
+      border-color: transparent;
+    }
+    .modal-btn:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
     }
 
     /* ============ RESPONSIVE ============ */
@@ -1454,6 +1559,19 @@
     </div>
   </div>
 
+  <div class="modal-backdrop" id="createNoteModal" aria-hidden="true">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="createNoteTitle">
+      <h3 id="createNoteTitle">New Core Note</h3>
+      <p>Create a markdown file in your core folder for a new project, topic, or area you want to explore.</p>
+      <input id="createNoteInput" type="text" placeholder="Acme launch plan" autocomplete="off">
+      <div class="modal-msg" id="createNoteMsg"></div>
+      <div class="modal-actions">
+        <button class="modal-btn" id="cancelCreateNoteBtn" type="button">Cancel</button>
+        <button class="modal-btn primary" id="submitCreateNoteBtn" type="button">Create Note</button>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <script>
@@ -1476,6 +1594,11 @@
   const prevDayBtn = document.getElementById("prevDayBtn");
   const nextDayBtn = document.getElementById("nextDayBtn");
   const themeToggle = document.getElementById("themeToggle");
+  const createNoteModal = document.getElementById("createNoteModal");
+  const createNoteInput = document.getElementById("createNoteInput");
+  const createNoteMsg = document.getElementById("createNoteMsg");
+  const cancelCreateNoteBtn = document.getElementById("cancelCreateNoteBtn");
+  const submitCreateNoteBtn = document.getElementById("submitCreateNoteBtn");
   const storageKey = "brain2-theme";
   const settingsKey = "brain2-daily-settings";
   const systemThemeQuery = window.matchMedia("(prefers-color-scheme: dark)");
@@ -2117,6 +2240,24 @@
 
   let homeActiveFileBtn = null;
 
+  function openCreateNoteModal() {
+    createNoteMsg.className = "modal-msg";
+    createNoteMsg.textContent = "";
+    createNoteInput.value = "";
+    createNoteModal.classList.add("open");
+    createNoteModal.setAttribute("aria-hidden", "false");
+    window.setTimeout(() => createNoteInput.focus(), 0);
+  }
+
+  function closeCreateNoteModal() {
+    createNoteModal.classList.remove("open");
+    createNoteModal.setAttribute("aria-hidden", "true");
+    createNoteMsg.className = "modal-msg";
+    createNoteMsg.textContent = "";
+    createNoteInput.value = "";
+    submitCreateNoteBtn.disabled = false;
+  }
+
   async function loadHomeView() {
     loadHomeIntStatus();
     loadVaultTree();
@@ -2148,27 +2289,47 @@
     try {
       const resp = await fetch("/api/notes");
       const data = await resp.json();
-      if (!data.notes || !data.notes.length) {
-        treeList.innerHTML = `<div class="vault-empty" style="padding:0 16px;">No notes yet. Seed your vault to get started.</div>`;
-        return;
-      }
       const groups = {};
+      for (const folder of (data.folders || [])) {
+        groups[folder] = [];
+      }
       for (const note of data.notes) {
         (groups[note.folder] = groups[note.folder] || []).push(note);
       }
       treeList.innerHTML = "";
       for (const [folder, notes] of Object.entries(groups)) {
+        const row = document.createElement("div");
+        row.className = "vault-folder-row";
         const lbl = document.createElement("div");
         lbl.className = "vault-folder-label";
         lbl.textContent = folder;
-        treeList.appendChild(lbl);
+        row.appendChild(lbl);
+        if (folder.toLowerCase() === "core") {
+          const addBtn = document.createElement("button");
+          addBtn.className = "vault-folder-add";
+          addBtn.type = "button";
+          addBtn.title = "Create new core note";
+          addBtn.setAttribute("aria-label", "Create new core note");
+          addBtn.textContent = "+";
+          addBtn.addEventListener("click", openCreateNoteModal);
+          row.appendChild(addBtn);
+        }
+        treeList.appendChild(row);
         for (const note of notes) {
           const btn = document.createElement("button");
           btn.className = "vault-file-btn";
+          btn.dataset.path = note.path;
           btn.textContent = note.title;
           btn.addEventListener("click", () => openHomeFile(note, btn));
           treeList.appendChild(btn);
         }
+      }
+      if (!data.notes || !data.notes.length) {
+        const empty = document.createElement("div");
+        empty.className = "vault-empty";
+        empty.style.padding = "12px 16px 0";
+        empty.textContent = "No notes yet. Create one in core or seed your vault to get started.";
+        treeList.appendChild(empty);
       }
     } catch {
       treeList.innerHTML = `<div class="vault-empty" style="padding:0 16px;">Failed to load vault.</div>`;
@@ -2185,11 +2346,50 @@
     titleEl.textContent = note.title;
     bodyEl.innerHTML = `<div class="vault-empty">Loading...</div>`;
     try {
-      const resp = await fetch(`/api/notes/${note.path}`);
+      const resp = await fetch(`/api/notes/${encodeURI(note.path)}`);
       const data = await resp.json();
       bodyEl.innerHTML = `<div class="daily-note">${marked.parse(data.content || "*(empty)*")}</div>`;
     } catch {
       bodyEl.innerHTML = `<div class="vault-empty">Failed to load file.</div>`;
+    }
+  }
+
+  async function createCoreNote() {
+    const title = createNoteInput.value.trim();
+    if (!title) {
+      createNoteMsg.className = "modal-msg err";
+      createNoteMsg.textContent = "Type a note name first.";
+      createNoteInput.focus();
+      return;
+    }
+    submitCreateNoteBtn.disabled = true;
+    createNoteMsg.className = "modal-msg";
+    createNoteMsg.textContent = "Creating...";
+    try {
+      const resp = await fetch("/api/notes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title }),
+      });
+      const data = await resp.json();
+      if (!resp.ok) {
+        createNoteMsg.className = "modal-msg err";
+        createNoteMsg.textContent = data.message || "Could not create note.";
+        submitCreateNoteBtn.disabled = false;
+        return;
+      }
+      closeCreateNoteModal();
+      await loadVaultTree();
+      const createdNote = { title: data.title, path: data.path, folder: data.path.split("/")[0] };
+      const treeButtons = Array.from(document.querySelectorAll("#homeTreeList .vault-file-btn"));
+      const createdBtn = treeButtons.find(btn => btn.dataset.path === createdNote.path);
+      if (createdBtn) {
+        await openHomeFile(createdNote, createdBtn);
+      }
+    } catch (error) {
+      createNoteMsg.className = "modal-msg err";
+      createNoteMsg.textContent = error.message || "Could not create note.";
+      submitCreateNoteBtn.disabled = false;
     }
   }
 
@@ -2216,6 +2416,21 @@
     seedBtn.disabled = false;
     seedBtn.textContent = "Seed Vault";
     loadVaultTree();
+  });
+
+  cancelCreateNoteBtn.addEventListener("click", closeCreateNoteModal);
+  submitCreateNoteBtn.addEventListener("click", createCoreNote);
+  createNoteInput.addEventListener("keydown", event => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      createCoreNote();
+    } else if (event.key === "Escape") {
+      event.preventDefault();
+      closeCreateNoteModal();
+    }
+  });
+  createNoteModal.addEventListener("click", event => {
+    if (event.target === createNoteModal) closeCreateNoteModal();
   });
 
   // ── integrations view ──────────────────────────────────────────────────────

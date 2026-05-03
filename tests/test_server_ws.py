@@ -167,6 +167,56 @@ def test_get_daily_route_rejects_unsupported_offsets(tmp_path, monkeypatch):
     assert "offset=0" in response.json()["message"]
 
 
+def test_get_notes_includes_empty_folders(tmp_path):
+    app_cfg = default_app_config(tmp_path / "vault")
+    env_cfg = load_env_config()
+    runtime = AppRuntime(app_cfg=app_cfg, env_cfg=env_cfg, session_manager=SessionManager(app_cfg.agent))
+    app = create_app(runtime)
+
+    client = TestClient(app)
+    response = client.get("/api/notes")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["folders"] == ["core", "references", "thoughts", "daily"]
+    assert payload["notes"] == []
+
+
+def test_post_notes_creates_new_core_note(tmp_path):
+    app_cfg = default_app_config(tmp_path / "vault")
+    env_cfg = load_env_config()
+    runtime = AppRuntime(app_cfg=app_cfg, env_cfg=env_cfg, session_manager=SessionManager(app_cfg.agent))
+    app = create_app(runtime)
+
+    client = TestClient(app)
+    response = client.post("/api/notes", json={"title": "Acme Launch"})
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["path"] == "core/Acme Launch.md"
+    assert (app_cfg.vault.path / "core" / "Acme Launch.md").read_text(encoding="utf-8") == "# Acme Launch\n"
+
+
+def test_post_notes_rejects_duplicates_and_empty_title(tmp_path):
+    app_cfg = default_app_config(tmp_path / "vault")
+    env_cfg = load_env_config()
+    runtime = AppRuntime(app_cfg=app_cfg, env_cfg=env_cfg, session_manager=SessionManager(app_cfg.agent))
+    app = create_app(runtime)
+    core_dir = app_cfg.vault.path / app_cfg.vault.core_folder
+    core_dir.mkdir(parents=True, exist_ok=True)
+    (core_dir / "Acme Launch.md").write_text("# Acme Launch\n", encoding="utf-8")
+
+    client = TestClient(app)
+
+    duplicate = client.post("/api/notes", json={"title": "Acme Launch"})
+    assert duplicate.status_code == 409
+    assert "already exists" in duplicate.json()["message"]
+
+    empty = client.post("/api/notes", json={"title": "   "})
+    assert empty.status_code == 400
+    assert "title" in empty.json()["message"].lower()
+
+
 def test_integrations_status_uses_agent_specific_mcp_config(tmp_path, monkeypatch):
     app_cfg = default_app_config(tmp_path / "vault", "codex")
     env_cfg = load_env_config()
