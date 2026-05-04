@@ -25,6 +25,7 @@ struct BrainWebView: NSViewRepresentable {
     func makeNSView(context: Context) -> WKWebView {
         let config = WKWebViewConfiguration()
         config.preferences.setValue(true, forKey: "developerExtrasEnabled")
+        config.userContentController.add(context.coordinator, name: "agentKeys")
         // Allow WebSocket connections to localhost
         config.limitsNavigationsToAppBoundDomains = false
         let webView = WKWebView(frame: .zero, configuration: config)
@@ -37,7 +38,7 @@ struct BrainWebView: NSViewRepresentable {
 
     func makeCoordinator() -> Coordinator { Coordinator() }
 
-    class Coordinator: NSObject, WKNavigationDelegate {
+    class Coordinator: NSObject, WKNavigationDelegate, WKScriptMessageHandler {
         func webView(
             _ webView: WKWebView,
             decidePolicyFor action: WKNavigationAction,
@@ -49,6 +50,16 @@ struct BrainWebView: NSViewRepresentable {
                 return
             }
             decisionHandler(.allow)
+        }
+
+        func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+            guard message.name == "agentKeys", let body = message.body as? [String: Any] else { return }
+            if let key = body["anthropic_api_key"] as? String, !key.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                KeychainHelper.save(key: "anthropic_api_key", value: key.trimmingCharacters(in: .whitespacesAndNewlines))
+            }
+            if let key = body["openai_api_key"] as? String, !key.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                KeychainHelper.save(key: "openai_api_key", value: key.trimmingCharacters(in: .whitespacesAndNewlines))
+            }
         }
     }
 }

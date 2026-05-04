@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import os
 import socket
 import webbrowser
@@ -12,7 +13,7 @@ from pathlib import Path
 from threading import Timer
 
 import uvicorn
-from fastapi import FastAPI, Query, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, Query, Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 
 import re
@@ -137,6 +138,25 @@ def create_app(runtime: AppRuntime) -> FastAPI:
                 },
             }
         )
+
+    @app.post("/api/agent-keys")
+    async def save_agent_keys(request: Request):
+        body = await request.json()
+        anthropic_key = str(body.get("anthropic_api_key") or "").strip()
+        openai_key = str(body.get("openai_api_key") or "").strip()
+
+        if not anthropic_key and not openai_key:
+            return JSONResponse({"status": "error", "message": "Add at least one API key."}, status_code=400)
+
+        saved: list[str] = []
+        if anthropic_key:
+            _update_runtime_env("ANTHROPIC_API_KEY", anthropic_key)
+            saved.append("anthropic")
+        if openai_key:
+            _update_runtime_env("OPENAI_API_KEY", openai_key)
+            saved.append("openai")
+
+        return JSONResponse({"status": "ok", "saved": saved})
 
     @app.post("/api/daily")
     async def post_daily(force: bool = Query(default=False), integrations: str = Query(default="")):
@@ -437,6 +457,34 @@ def _strip_frontmatter(content: str) -> str:
         if end != -1:
             return content[end + 4:].lstrip("\n")
     return content
+
+
+def _update_runtime_env(key: str, value: str) -> None:
+    env_file = _env_file_path()
+    lines: list[str] = []
+    found = False
+    if env_file.exists():
+        for line in env_file.read_text(encoding="utf-8").splitlines():
+            if line.strip().startswith(f"{key}="):
+                lines.append(f"{key}={json.dumps(value)[1:-1]}")
+                found = True
+            else:
+                lines.append(line)
+    if not found:
+        lines.append(f"{key}={json.dumps(value)[1:-1]}")
+    try:
+        env_file.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    except OSError:
+        pass
+    os.environ[key] = value
+
+
+def _env_file_path() -> Path:
+    project_env = Path(__file__).resolve().parent.parent / ".env"
+    if project_env.exists():
+        return project_env
+    cwd_env = Path.cwd() / ".env"
+    return cwd_env
 
 
 def _normalize_note_title(title: str) -> str:
