@@ -23,23 +23,23 @@ Everything runs locally. No cloud middleman. Your data stays yours.
 
 ---
 
-## Mac App
+## Get started
 
-The easiest way to use BrainSquared is the native Mac app.
+### Option 1 — Mac App
+
+The easiest way. No terminal required.
 
 **[Download BrainSquared.dmg →](https://github.com/Sushanti99/BrainSquared/releases/latest)**
 
 **Requirements:** macOS 13 or later · Node.js · An [Anthropic API key](https://console.anthropic.com)
 
-### Getting started
-
 **1. Download and install**
 
-Download `BrainSquared.dmg` from the link above, open it, and drag BrainSquared to your Applications folder.
+Download `BrainSquared.dmg`, open it, and drag BrainSquared to your Applications folder.
 
 **2. First launch**
 
-Because this build isn't notarized yet, macOS will show a security warning on first open. To bypass it:
+Because this build isn't notarized yet, macOS will show a security warning on first open:
 - Right-click BrainSquared in Applications → **Open**
 - Go to **System Settings → Privacy & Security** → scroll down → **Open Anyway**
 
@@ -47,7 +47,7 @@ You only need to do this once.
 
 **3. Set up your vault**
 
-On first launch, BrainSquared walks you through:
+BrainSquared walks you through:
 - Choosing a folder where it stores your notes (pick an existing Obsidian vault or create a new one)
 - Entering your Anthropic API key (stored securely in your Keychain)
 - Automatically installing the `claude-code` and `codex` CLIs
@@ -58,31 +58,51 @@ Once set up, BrainSquared opens directly to the interface every time. Connect yo
 
 ---
 
-## How it works
+### Option 2 — localhost (CLI)
 
-```
-Mac App  ──►  brain² Server  ──►  Claude Code / Codex CLI
-                                          │
-                                 Local Knowledge Base (Obsidian vault)
-                                          │
-                    Gmail · Calendar · GitHub · Slack · Notion · Linear · ...
-```
-
-BrainSquared treats your tools as sources of truth and your local vault as a continuously updated knowledge base. When you connect a new integration, the AI reads your existing notes and makes surgical edits — updating what's relevant, adding only what has no home yet. Nothing gets overwritten wholesale.
-
-Every day you get a unified view of what needs your attention. You act on it. What you finish disappears tomorrow. What you don't comes back.
-
----
-
-## CLI (advanced)
-
-Prefer the terminal? Install the Python package directly.
+Run it directly from the terminal. Full control over every option.
 
 **Prerequisites:** [Claude Code](https://claude.ai/code) (or Codex) installed and authenticated.
+
+**1. Install**
 
 ```bash
 pip install brainsquared
 ```
+
+**2. Create your vault**
+
+Starting fresh:
+```bash
+brain init --vault ~/my-vault
+```
+
+Or seed it from your existing tools first:
+```bash
+brain seed --vault ~/my-vault \
+           --from-obsidian ~/path/to/existing-vault \
+           --from-gmail \
+           --from-calendar \
+           --from-notion
+```
+
+**3. Start**
+
+```bash
+brain start --vault ~/my-vault
+```
+
+Opens `http://localhost:3000` in your browser.
+
+**4. Connect your tools**
+
+Go to the **Integrations** tab in the UI. Connect Gmail, Google Calendar, Notion, and more — no config files needed.
+
+**5. Generate your daily note**
+
+Go to the **Tasks** tab and click **Generate Daily**. BrainSquared pulls your tasks, events, emails, and open PRs into one view.
+
+**All CLI commands**
 
 ```bash
 brain seed    --vault PATH  [--from-obsidian PATH] [--from-notion] [--from-gmail] [--from-calendar] [--dry-run]
@@ -91,6 +111,22 @@ brain start   --vault PATH  [--agent claude-code|codex] [--port N] [--no-open]
 brain daily   --vault PATH  [--force]
 brain status  --vault PATH
 ```
+
+---
+
+## How it works
+
+```
+Mac App / Browser  ──►  brain² Server  ──►  Claude Code / Codex CLI
+                                                    │
+                                       Local Knowledge Base (Obsidian vault)
+                                                    │
+                          Gmail · Calendar · GitHub · Slack · Notion · Linear · ...
+```
+
+BrainSquared treats your tools as sources of truth and your local vault as a continuously updated knowledge base. When you connect a new integration, the AI reads your existing notes and makes surgical edits — updating what's relevant, adding only what has no home yet. Nothing gets overwritten wholesale.
+
+Every day you get a unified view of what needs your attention. You act on it. What you finish disappears tomorrow. What you don't comes back.
 
 ---
 
@@ -110,7 +146,7 @@ pip install -e '.[test]'
 pytest -q
 ```
 
-To build the Mac app binary:
+To build the Mac app:
 ```bash
 pip install pyinstaller
 pyinstaller brain.spec           # builds dist/BrainServer
