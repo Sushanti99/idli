@@ -31,8 +31,6 @@ The easiest way. No terminal required.
 
 **[Download BrainSquared.dmg →](https://github.com/Sushanti99/BrainSquared/releases/latest)**
 
-**Requirements:** macOS 13 or later · Node.js · An [Anthropic API key](https://console.anthropic.com)
-
 **1. Download and install**
 
 Download `BrainSquared.dmg`, open it, and drag BrainSquared to your Applications folder.
