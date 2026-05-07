@@ -45,19 +45,25 @@ targets:
     postBuildScripts:
       - name: Copy Bundle Resources
         script: |
-          # BrainServer executable
-          cp "${PROJECT_DIR}/BrainSquared/Resources/BrainServer" "${BUILT_PRODUCTS_DIR}/${EXECUTABLE_FOLDER_PATH}/BrainServer"
-          chmod +x "${BUILT_PRODUCTS_DIR}/${EXECUTABLE_FOLDER_PATH}/BrainServer"
-          # App icon + logo into Contents/Resources
+          # BrainServer onedir lives in Contents/Resources to avoid codesign issues
           RESOURCES="${BUILT_PRODUCTS_DIR}/${WRAPPER_NAME}/Contents/Resources"
           mkdir -p "$RESOURCES"
+          DEST="$RESOURCES/BrainServer"
+          rm -rf "$DEST"
+          ditto "${PROJECT_DIR}/BrainSquared/Resources/BrainServer" "$DEST"
+          chmod +x "$DEST/BrainServer"
+          # Sign all nested Mach-O binaries
+          find "$DEST" -type f | while read f; do
+            if file "$f" 2>/dev/null | grep -q "Mach-O"; then
+              codesign --force --sign - "$f" 2>/dev/null || true
+            fi
+          done
+          # App icon + logo
           cp "${PROJECT_DIR}/BrainSquared/Resources/AppIcon.icns" "$RESOURCES/AppIcon.icns"
           cp "${PROJECT_DIR}/BrainSquared/Resources/brain-logo.png" "$RESOURCES/brain-logo.png"
         inputFiles:
-          - $(PROJECT_DIR)/BrainSquared/Resources/BrainServer
           - $(PROJECT_DIR)/BrainSquared/Resources/AppIcon.icns
           - $(PROJECT_DIR)/BrainSquared/Resources/brain-logo.png
         outputFiles:
-          - $(BUILT_PRODUCTS_DIR)/$(EXECUTABLE_FOLDER_PATH)/BrainServer
           - $(BUILT_PRODUCTS_DIR)/$(WRAPPER_NAME)/Contents/Resources/AppIcon.icns
           - $(BUILT_PRODUCTS_DIR)/$(WRAPPER_NAME)/Contents/Resources/brain-logo.png

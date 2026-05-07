@@ -41,10 +41,28 @@ def _load_google_credentials_from_file() -> tuple[str, str]:
         return "", ""
 
 def _get_google_client_config() -> dict:
+    import json as _json, sys as _sys
     client_id = GOOGLE_CLIENT_ID
     client_secret = GOOGLE_CLIENT_SECRET
     if not client_id or not client_secret:
         client_id, client_secret = _load_google_credentials_from_file()
+    if not client_id or not client_secret:
+        # Look for credentials.json bundled alongside the executable (PyInstaller or source tree)
+        candidates = [
+            Path(getattr(_sys, "_MEIPASS", "")) / "credentials.json",
+            Path(__file__).parent.parent / "credentials.json",
+        ]
+        for p in candidates:
+            if p.exists():
+                try:
+                    data = _json.loads(p.read_text())
+                    cfg = data.get("web") or data.get("installed") or {}
+                    client_id = cfg.get("client_id", "")
+                    client_secret = cfg.get("client_secret", "")
+                    if client_id:
+                        break
+                except Exception:
+                    pass
     return {
         "web": {
             "client_id": client_id,

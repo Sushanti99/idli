@@ -15,9 +15,13 @@ def main() -> int:
 
     vault_path = Path(args.vault).expanduser().resolve()
 
-    # Env file lives in app support dir; fall through to env vars if absent
+    # Env file lives in app support dir — always create the dir and file so
+    # load_env_config uses it as the base path (avoids writing token.json to /)
     app_support = Path.home() / "Library" / "Application Support" / "BrainSquared"
+    app_support.mkdir(parents=True, exist_ok=True)
     env_file = app_support / ".env"
+    if not env_file.exists():
+        env_file.write_text("")
 
     from brain.app_config import load_app_config
     from brain.env_config import load_env_config
@@ -29,7 +33,7 @@ def main() -> int:
         print(f"ERROR:{exc}", flush=True)
         return 1
 
-    env_cfg = load_env_config(env_file=env_file if env_file.exists() else None)
+    env_cfg = load_env_config(env_file=env_file)
     # Signal Swift: server is about to bind — Swift polls HTTP instead of reading this
     # but we print for debugging
     print(f"STARTING:{app_cfg.server.port}", flush=True)

@@ -10,9 +10,8 @@ class ServerManager: ObservableObject {
     private var pollTimer: Timer?
 
     func start(vaultPath: String) {
-        let binaryURL = Bundle.main.executableURL!
-            .deletingLastPathComponent()
-            .appendingPathComponent("BrainServer")
+        let binaryURL = Bundle.main.resourceURL!
+            .appendingPathComponent("BrainServer/BrainServer")
         guard FileManager.default.fileExists(atPath: binaryURL.path) else {
             errorMessage = "BrainServer binary not found in app bundle."
             return
