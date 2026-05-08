@@ -1,0 +1,10 @@
+// Copy this file to SupabaseConfig.swift and fill in your project values.
+// SupabaseConfig.swift is gitignored.
+
+import Foundation
+
+enum SupabaseConfig {
+    static let url = URL(string: "https://YOUR-PROJECT-REF.supabase.co")!
+    static let anonKey = "YOUR-ANON-PUBLIC-KEY"
+    static let oauthRedirectURL = URL(string: "brainsquared://auth-callback")!
+}

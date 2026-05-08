@@ -3,6 +3,7 @@ import SwiftUI
 struct OnboardingView: View {
     let onComplete: (String) -> Void
 
+    @EnvironmentObject var authManager: AuthManager
     @State private var step = 0
     @State private var vaultPath = ""
     @State private var anthropicKey = ""
@@ -30,7 +31,7 @@ struct OnboardingView: View {
             Text("Set up brain²")
                 .font(.title2.bold())
             Spacer()
-            StepIndicator(current: step, total: 3)
+            StepIndicator(current: step, total: 4)
         }
         .padding(.horizontal, 32)
         .padding(.vertical, 20)
@@ -39,14 +40,65 @@ struct OnboardingView: View {
     @ViewBuilder
     private var stepContent: some View {
         switch step {
-        case 0: vaultStep
-        case 1: apiKeysStep
-        case 2: installStep
+        case 0: signInStep
+        case 1: vaultStep
+        case 2: apiKeysStep
+        case 3: installStep
         default: EmptyView()
         }
     }
 
-    // MARK: Step 0 – Vault
+    // MARK: Step 0 – Sign in
+
+    private var signInStep: some View {
+        VStack(alignment: .leading, spacing: 24) {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Sign in to brain²")
+                    .font(.headline)
+                Text("Sign in with your Google account so your integrations stay connected across devices.")
+                    .foregroundColor(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            if let user = authManager.user {
+                HStack(spacing: 10) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundColor(.green)
+                    Text("Signed in as \(user.email)")
+                        .foregroundColor(.secondary)
+                }
+            } else if let error = authManager.errorMessage {
+                Text(error)
+                    .font(.caption)
+                    .foregroundColor(.red)
+            }
+
+            Spacer()
+
+            HStack {
+                Spacer()
+                if authManager.user != nil {
+                    Button("Continue") { step = 1 }
+                        .buttonStyle(.borderedProminent)
+                } else if authManager.isLoading {
+                    ProgressView().controlSize(.small)
+                } else {
+                    Button {
+                        Task { await authManager.signInWithGoogle() }
+                    } label: {
+                        Label("Sign in with Google", systemImage: "g.circle.fill")
+                    }
+                    .buttonStyle(.borderedProminent)
+                }
+            }
+        }
+        .padding(32)
+        .onChange(of: authManager.user) { newUser in
+            if newUser != nil { step = 1 }
+        }
+    }
+
+    // MARK: Step 1 – Vault
 
     private var vaultStep: some View {
         VStack(alignment: .leading, spacing: 24) {
@@ -75,8 +127,9 @@ struct OnboardingView: View {
             Spacer()
 
             HStack {
+                Button("Back") { step = 0 }
                 Spacer()
-                Button("Continue") { step = 1 }
+                Button("Continue") { step = 2 }
                     .buttonStyle(.borderedProminent)
                     .disabled(vaultPath.isEmpty)
             }
@@ -84,7 +137,7 @@ struct OnboardingView: View {
         .padding(32)
     }
 
-    // MARK: Step 1 – API Keys
+    // MARK: Step 2 – API Keys
 
     private var apiKeysStep: some View {
         VStack(alignment: .leading, spacing: 24) {
@@ -116,9 +169,9 @@ struct OnboardingView: View {
             Spacer()
 
             HStack {
-                Button("Back") { step = 0 }
+                Button("Back") { step = 1 }
                 Spacer()
-                Button("Continue") { step = 2 }
+                Button("Continue") { step = 3 }
                     .buttonStyle(.borderedProminent)
                     .disabled(anthropicKey.isEmpty)
             }
@@ -126,7 +179,7 @@ struct OnboardingView: View {
         .padding(32)
     }
 
-    // MARK: Step 2 – CLI Install
+    // MARK: Step 3 – CLI Install
 
     private var installStep: some View {
         VStack(alignment: .leading, spacing: 24) {
@@ -143,7 +196,7 @@ struct OnboardingView: View {
             Spacer()
 
             HStack {
-                Button("Back") { step = 1; installState = .idle }
+                Button("Back") { step = 2; installState = .idle }
                     .disabled({ if case .running = installState { return true }; return false }())
                 Spacer()
                 if case .done = installState {

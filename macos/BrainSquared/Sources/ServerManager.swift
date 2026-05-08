@@ -8,8 +8,9 @@ class ServerManager: ObservableObject {
 
     private var process: Process?
     private var pollTimer: Timer?
+    private var currentUserId: String?
 
-    func start(vaultPath: String) {
+    func start(vaultPath: String, userId: String?) {
         let binaryURL = Bundle.main.resourceURL!
             .appendingPathComponent("BrainServer/BrainServer")
         guard FileManager.default.fileExists(atPath: binaryURL.path) else {
@@ -19,6 +20,7 @@ class ServerManager: ObservableObject {
 
         let selectedPort = availablePort(starting: 3000)
         self.port = selectedPort
+        self.currentUserId = userId
 
         let proc = Process()
         proc.executableURL = binaryURL
@@ -48,6 +50,9 @@ class ServerManager: ObservableObject {
 
     private func buildEnvironment() -> [String: String] {
         var env = ProcessInfo.processInfo.environment
+        if let userId = currentUserId, !userId.isEmpty {
+            env["BRAIN_USER_ID"] = userId
+        }
         if let key = KeychainHelper.load(key: "anthropic_api_key") {
             env["ANTHROPIC_API_KEY"] = key
         }

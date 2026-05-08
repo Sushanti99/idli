@@ -480,11 +480,13 @@ def _update_runtime_env(key: str, value: str) -> None:
 
 
 def _env_file_path() -> Path:
+    # Project root takes priority for dev; otherwise per-user App Support dir
+    # (BRAIN_USER_ID-scoped — see brain.env_config.user_app_support_dir).
     project_env = Path(__file__).resolve().parent.parent / ".env"
     if project_env.exists():
         return project_env
-    cwd_env = Path.cwd() / ".env"
-    return cwd_env
+    from brain.env_config import user_app_support_dir
+    return user_app_support_dir() / ".env"
 
 
 def _normalize_note_title(title: str) -> str:

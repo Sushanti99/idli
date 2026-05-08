@@ -93,7 +93,7 @@ NOTION_CLIENT_SECRET = os.getenv("NOTION_CLIENT_SECRET", "")
 # ── shared state ──────────────────────────────────────────────────────────────
 
 _oauth_states: dict[str, tuple] = {}
-ENV_FILE = Path(".env")
+ENV_FILE = Path(".env")  # overridden in register() from runtime.env_cfg
 
 
 # ── helpers ───────────────────────────────────────────────────────────────────
@@ -167,6 +167,13 @@ def _remove_env(key: str) -> None:
 # ── route registration ────────────────────────────────────────────────────────
 
 def register(app: "FastAPI", runtime: "AppRuntime") -> None:
+    global ENV_FILE
+    project_env = Path(__file__).resolve().parent.parent / ".env"
+    if project_env.exists():
+        ENV_FILE = project_env
+    else:
+        from brain.env_config import user_app_support_dir
+        ENV_FILE = user_app_support_dir() / ".env"
 
     def _trigger_ingest(integration_id: str) -> None:
         asyncio.create_task(
@@ -204,18 +211,26 @@ def register(app: "FastAPI", runtime: "AppRuntime") -> None:
         _oauth_states[state] = (flow, redirect_uri)
         return auth_url, state, flow
 
+    def _google_redirect_uri(request: Request) -> str:
+        port = request.url.port or 80
+        return f"http://localhost:{port}/api/integrations/google/callback"
+
     @app.get("/api/integrations/google/auth-url")
-    async def google_auth_url():
+    async def google_auth_url(request: Request):
         try:
-            auth_url, _, _ = _google_build_auth(_get_google_client_config())
+            cfg = _get_google_client_config()
+            cfg = {**cfg, "web": {**cfg["web"], "redirect_uris": [_google_redirect_uri(request)]}}
+            auth_url, _, _ = _google_build_auth(cfg)
             return JSONResponse({"url": auth_url})
         except Exception as exc:
             return JSONResponse({"error": str(exc)}, status_code=500)
 
     @app.get("/api/integrations/google/connect")
-    async def google_connect():
+    async def google_connect(request: Request):
         try:
-            auth_url, _, _ = _google_build_auth(_get_google_client_config())
+            cfg = _get_google_client_config()
+            cfg = {**cfg, "web": {**cfg["web"], "redirect_uris": [_google_redirect_uri(request)]}}
+            auth_url, _, _ = _google_build_auth(cfg)
             return RedirectResponse(auth_url)
         except Exception as exc:
             return HTMLResponse(_error_page(str(exc)))

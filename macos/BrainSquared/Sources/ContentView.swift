@@ -27,6 +27,7 @@ struct BrainWebView: NSViewRepresentable {
         config.preferences.setValue(true, forKey: "developerExtrasEnabled")
         config.userContentController.add(context.coordinator, name: "agentKeys")
         config.userContentController.add(context.coordinator, name: "clipboard")
+        config.userContentController.add(context.coordinator, name: "openExternal")
         // Allow WebSocket connections to localhost
         config.limitsNavigationsToAppBoundDomains = false
         let webView = WKWebView(frame: .zero, configuration: config)
@@ -57,6 +58,11 @@ struct BrainWebView: NSViewRepresentable {
             if message.name == "clipboard", let text = message.body as? String {
                 NSPasteboard.general.clearContents()
                 NSPasteboard.general.setString(text, forType: .string)
+                return
+            }
+            if message.name == "openExternal", let urlString = message.body as? String,
+               let url = URL(string: urlString) {
+                NSWorkspace.shared.open(url)
                 return
             }
             guard message.name == "agentKeys", let body = message.body as? [String: Any] else { return }

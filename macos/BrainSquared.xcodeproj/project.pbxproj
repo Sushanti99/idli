@@ -15,6 +15,9 @@
 		A8231BA507D78AA35D4D201E /* CLIInstaller.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6F5318D9D2548226609FCD2 /* CLIInstaller.swift */; };
 		BB669BF3899168A4883E420B /* KeychainHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62CA3B942378D01C6988EA82 /* KeychainHelper.swift */; };
 		C1FC92ED385C4578FA546DB5 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B19837488DDF5F6267FCDA2 /* OnboardingView.swift */; };
+		D8D15DBE2FAEA04C00C7C9B9 /* AuthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8D15DBC2FAEA04C00C7C9B9 /* AuthManager.swift */; };
+		D8D15DBF2FAEA04C00C7C9B9 /* SupabaseConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8D15DBD2FAEA04C00C7C9B9 /* SupabaseConfig.swift */; };
+		D8D15DC22FAEA04C00C7C9B9 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = D8D15DC02FAEA04C00C7C9B9 /* Supabase */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -26,8 +29,21 @@
 		BBD54A77ADD2B846FACD87D5 /* BrainSquared.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BrainSquared.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CD606C114463BD9C737C8F34 /* BrainSquaredApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrainSquaredApp.swift; sourceTree = "<group>"; };
 		D6D3D1D35E1F7A6952820ECF /* BrainLogoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrainLogoView.swift; sourceTree = "<group>"; };
+		D8D15DBC2FAEA04C00C7C9B9 /* AuthManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthManager.swift; sourceTree = "<group>"; };
+		D8D15DBD2FAEA04C00C7C9B9 /* SupabaseConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseConfig.swift; sourceTree = "<group>"; };
 		E6F5318D9D2548226609FCD2 /* CLIInstaller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLIInstaller.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		D8D15DC12FAEA04C00C7C9B9 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D8D15DC22FAEA04C00C7C9B9 /* Supabase in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		0AA880340971D5F105536DA7 = {
@@ -41,6 +57,8 @@
 		41351251F2A85EA35E2BC545 /* Sources */ = {
 			isa = PBXGroup;
 			children = (
+				D8D15DBC2FAEA04C00C7C9B9 /* AuthManager.swift */,
+				D8D15DBD2FAEA04C00C7C9B9 /* SupabaseConfig.swift */,
 				5F3FF1FF2BEFAD994330A4F9 /* BrainConfigWriter.swift */,
 				D6D3D1D35E1F7A6952820ECF /* BrainLogoView.swift */,
 				CD606C114463BD9C737C8F34 /* BrainSquaredApp.swift */,
@@ -77,6 +95,7 @@
 			buildConfigurationList = 58693F9731DB3D9E65A424B4 /* Build configuration list for PBXNativeTarget "BrainSquared" */;
 			buildPhases = (
 				1F38665364C54CAFB3406938 /* Sources */,
+				D8D15DC12FAEA04C00C7C9B9 /* Frameworks */,
 				70BA41B14DF7892CA8DCB288 /* Copy Bundle Resources */,
 			);
 			buildRules = (
@@ -85,6 +104,7 @@
 			);
 			name = BrainSquared;
 			packageProductDependencies = (
+				D8D15DC02FAEA04C00C7C9B9 /* Supabase */,
 			);
 			productName = BrainSquared;
 			productReference = BBD54A77ADD2B846FACD87D5 /* BrainSquared.app */;
@@ -97,7 +117,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
-				LastUpgradeCheck = 1500;
+				LastUpgradeCheck = 2640;
 				TargetAttributes = {
 					7D4692CFD9A8AF8C2C87EC28 = {
 						ProvisioningStyle = Automatic;
@@ -113,6 +133,9 @@
 			);
 			mainGroup = 0AA880340971D5F105536DA7;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				D8D15DBB2FAEA01900C7C9B9 /* XCRemoteSwiftPackageReference "supabase-swift" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 70105747D55DDAEAEB22FD6F /* Products */;
 			projectDirPath = "";
@@ -132,7 +155,6 @@
 			inputFileListPaths = (
 			);
 			inputPaths = (
-				"$(PROJECT_DIR)/BrainSquared/Resources/BrainServer",
 				"$(PROJECT_DIR)/BrainSquared/Resources/AppIcon.icns",
 				"$(PROJECT_DIR)/BrainSquared/Resources/brain-logo.png",
 			);
@@ -140,13 +162,12 @@
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(BUILT_PRODUCTS_DIR)/$(EXECUTABLE_FOLDER_PATH)/BrainServer",
 				"$(BUILT_PRODUCTS_DIR)/$(WRAPPER_NAME)/Contents/Resources/AppIcon.icns",
 				"$(BUILT_PRODUCTS_DIR)/$(WRAPPER_NAME)/Contents/Resources/brain-logo.png",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# BrainServer executable\ncp \"${PROJECT_DIR}/BrainSquared/Resources/BrainServer\" \"${BUILT_PRODUCTS_DIR}/${EXECUTABLE_FOLDER_PATH}/BrainServer\"\nchmod +x \"${BUILT_PRODUCTS_DIR}/${EXECUTABLE_FOLDER_PATH}/BrainServer\"\n# App icon + logo into Contents/Resources\nRESOURCES=\"${BUILT_PRODUCTS_DIR}/${WRAPPER_NAME}/Contents/Resources\"\nmkdir -p \"$RESOURCES\"\ncp \"${PROJECT_DIR}/BrainSquared/Resources/AppIcon.icns\" \"$RESOURCES/AppIcon.icns\"\ncp \"${PROJECT_DIR}/BrainSquared/Resources/brain-logo.png\" \"$RESOURCES/brain-logo.png\"\n";
+			shellScript = "# BrainServer onedir lives in Contents/Resources to avoid codesign issues\nRESOURCES=\"${BUILT_PRODUCTS_DIR}/${WRAPPER_NAME}/Contents/Resources\"\nmkdir -p \"$RESOURCES\"\nDEST=\"$RESOURCES/BrainServer\"\nrm -rf \"$DEST\"\nditto \"${PROJECT_DIR}/BrainSquared/Resources/BrainServer\" \"$DEST\"\nchmod +x \"$DEST/BrainServer\"\n# Sign all nested Mach-O binaries\nfind \"$DEST\" -type f | while read f; do\n  if file \"$f\" 2>/dev/null | grep -q \"Mach-O\"; then\n    codesign --force --sign - \"$f\" 2>/dev/null || true\n  fi\ndone\n# App icon + logo\ncp \"${PROJECT_DIR}/BrainSquared/Resources/AppIcon.icns\" \"$RESOURCES/AppIcon.icns\"\ncp \"${PROJECT_DIR}/BrainSquared/Resources/brain-logo.png\" \"$RESOURCES/brain-logo.png\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -157,6 +178,8 @@
 			files = (
 				5A2B32A4D27385966FEE5234 /* BrainConfigWriter.swift in Sources */,
 				56FFD7638609806F29755CE1 /* BrainLogoView.swift in Sources */,
+				D8D15DBE2FAEA04C00C7C9B9 /* AuthManager.swift in Sources */,
+				D8D15DBF2FAEA04C00C7C9B9 /* SupabaseConfig.swift in Sources */,
 				07563BDCC77587382A74FA35 /* BrainSquaredApp.swift in Sources */,
 				A8231BA507D78AA35D4D201E /* CLIInstaller.swift in Sources */,
 				872510A1EC18AAFCBA40C6FC /* ContentView.swift in Sources */,
@@ -204,10 +227,12 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -228,6 +253,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = BrainSquared;
 				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.9;
@@ -269,10 +295,12 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -286,6 +314,7 @@
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = BrainSquared;
 				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.9;
@@ -298,6 +327,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = BrainSquared/Resources/BrainSquared.entitlements;
 				COMBINE_HIDPI_IMAGES = YES;
+				DEAD_CODE_STRIPPING = YES;
 				INFOPLIST_FILE = BrainSquared/Resources/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -314,6 +344,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = BrainSquared/Resources/BrainSquared.entitlements;
 				COMBINE_HIDPI_IMAGES = YES;
+				DEAD_CODE_STRIPPING = YES;
 				INFOPLIST_FILE = BrainSquared/Resources/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -346,6 +377,25 @@
 			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		D8D15DBB2FAEA01900C7C9B9 /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/supabase/supabase-swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.5.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		D8D15DC02FAEA04C00C7C9B9 /* Supabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D8D15DBB2FAEA01900C7C9B9 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Supabase;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 514CE7E981557FCB2BDD81AC /* Project object */;
 }

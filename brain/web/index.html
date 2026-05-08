@@ -3093,17 +3093,24 @@
         if (expand) expand.classList.toggle("open");
         return;
       }
-      const popup = window.open(
-        `/api/integrations/${bid}/connect`,
-        `connect-${bid}`,
-        "width=580,height=660,menubar=no,toolbar=no,location=no"
-      );
-      const poll = setInterval(() => {
-        if (popup && popup.closed) {
-          clearInterval(poll);
-          loadIntegrations();
-        }
-      }, 500);
+      const connectUrl = new URL(`/api/integrations/${bid}/connect`, window.location.origin).href;
+      if (window.webkit?.messageHandlers?.openExternal) {
+        window.webkit.messageHandlers.openExternal.postMessage(connectUrl);
+        // Poll status until the OAuth callback completes
+        const poll = setInterval(async () => {
+          const s = await fetch("/api/integrations/status").then(r => r.json()).catch(() => null);
+          if (s && (s[id] || (id === "calendar" && s.gmail))) {
+            clearInterval(poll);
+            loadIntegrations();
+          }
+        }, 1500);
+        setTimeout(() => clearInterval(poll), 120000);
+      } else {
+        const popup = window.open(connectUrl, `connect-${bid}`, "width=580,height=660,menubar=no,toolbar=no,location=no");
+        const poll = setInterval(() => {
+          if (popup && popup.closed) { clearInterval(poll); loadIntegrations(); }
+        }, 500);
+      }
     } else if (action === "disconnect") {
       await fetch(`/api/integrations/${bid}/disconnect`, { method: "POST" });
       loadIntegrations();
